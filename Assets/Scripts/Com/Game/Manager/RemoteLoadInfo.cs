@@ -34,6 +34,7 @@ namespace Assets.Scripts.Com.Game.Manager
 
             if (isAssetBundle)
             {
+               // unityWebRequest = UnityWebRequest.GetAssetBundle(path.Replace(" ", "%20"));
                 unityWebRequest = UnityWebRequestAssetBundle.GetAssetBundle(path.Replace(" ", "%20"));
             }
             else
