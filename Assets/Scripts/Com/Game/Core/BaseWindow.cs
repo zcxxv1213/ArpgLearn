@@ -170,11 +170,7 @@ namespace Assets.Scripts.Com.Game.Core
             base.OnViewShow();
 
             OnPlayOpenSound();
-
-            if (mViewParam.hideAllActors)
-            {
-                mHideAllActorsTimer = GameTimer.SetTimeout(0.1f, sUIManager.HideAllActors);
-            }
+            
         }
         GameTimer mHideAllActorsTimer;
 
@@ -191,12 +187,10 @@ namespace Assets.Scripts.Com.Game.Core
             }
         }
 
-        //打开界面时播放音效..不需要的在子类重写
         protected virtual void OnPlayOpenSound()
         {
            
         }
-        //关闭界面时播放音效
         protected virtual void OnPlayCloseSound()
         {
            

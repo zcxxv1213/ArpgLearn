@@ -332,7 +332,7 @@ namespace Assets.Scripts.Com.Game.Manager
             {
                 BaseWindow baseWindow = windowList[i];
 
-                if (baseWindow.mIsShow == false && baseWindow.mViewParam.HideRebuild)
+                if (baseWindow.mIsShow == false)
                 {
                     return baseWindow;
                 }
@@ -426,7 +426,7 @@ namespace Assets.Scripts.Com.Game.Manager
             {
                 showWindow = GetShowWindowOnLayer(mNormalLayerList[i]);
 
-                if (showWindow != null && showWindow.mViewParam.rebuild && mQueueWindowList.Contains(showWindow))
+                if (showWindow != null && mQueueWindowList.Contains(showWindow))
                 {
                     KeyValuePair<int, object> kvp = new KeyValuePair<int, object>(showWindow.mViewID, showWindow.GetRebuildParam());
                     mShowRebuildViewList.Add(kvp);
@@ -505,8 +505,8 @@ namespace Assets.Scripts.Com.Game.Manager
 
         public void AddQueueWindow(BaseWindow queueWindow)
         {
-            if (queueWindow.mViewParam.replacePrevQueueWin)
-                ClearQueueWinowList();
+           // if (queueWindow.mViewParam.replacePrevQueueWin)
+            //    ClearQueueWinowList();
 
             //if (mQueueWindowList.Contains(queueWindow) == false)
             if (mQueueWindowList.Count > 0 && mQueueWindowList.Last.Previous != null && mQueueWindowList.Last.Previous.Value == queueWindow)
@@ -658,7 +658,8 @@ namespace Assets.Scripts.Com.Game.Manager
                 }
                 else
                 {
-                    SceneManager.Instance.SetCameraCullMainActor();
+                    Debug.LogWarning("SetCameraLayer of Other");
+                  //  SceneManager.Instance.SetCameraCullMainActor();
                 }
             }
             mPlayerInfoView.SetActive(visible);
@@ -691,13 +692,7 @@ namespace Assets.Scripts.Com.Game.Manager
                 }, true);
             }
         }
-
-        public void HideAllActors()
-        {
-            mPlayerInfoView.SetActive(false);
-            SceneManager.Instance.SetCameraCullMainActor();
-        }
-
+        
         //当某个层级有界面显示的时候调用这个函数
         public void OnLayerShow(GameObject go, BaseWindow baseWindow)
         {

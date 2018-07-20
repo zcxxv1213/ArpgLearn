@@ -1,9 +1,7 @@
-﻿using Assets.Scripts.Com.Game.Config;
-using Assets.Scripts.Com.Game.Enum;
+﻿using Assets.Scripts.Com.Game.Enum;
 using Assets.Scripts.Com.Game.Events;
-using Assets.Scripts.Com.Game.Globals;
 using Assets.Scripts.Com.Game.Manager;
-using Assets.Scripts.Com.Game.Mono;
+using Assets.Scripts.Com.Manager;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,8 +20,6 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         protected string mSceneName;
         protected SceneEnum mType;
         protected EnterSceneStateEnum mLoadSceneCompleteState;
-
-        private SceneEffectControl mSceneEffectControl;
 
         public BaseScene()
         {
@@ -60,32 +56,14 @@ namespace Assets.Scripts.Com.Game.Module.Scene
 
         protected void InitSceneConfig()
         {
-            Sysscene scene = ConfigManager.Instance.mSceneControl.GetConfigData(SceneManager.Instance.mSceneId);
-
-            if (scene != null)
-            {
-                mSceneName = scene.scene_name;
-                mType = (SceneEnum)scene.scene_type;
-            }
+          
         }
 
-        //新场景加载完成后才叫进入场景
+        
         public virtual void EnterScene()
         {
-            mSceneEffectControl = new SceneEffectControl(GetSceneEffectParam());
+        
         }
-
-        protected virtual SceneEffectParam GetSceneEffectParam()
-        {
-            return new SceneEffectParam();
-        }
-
-        protected virtual void PlayBackgroundMusic()
-        {
-
-        }
-
-        //新场景加载前的处理
         public virtual void BeforeEnterScene()
         {
             InitSceneSettings();
@@ -94,7 +72,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
 
         public virtual void InitSceneSettings()
         {
-            ActorVO.heroModelScale = 1.0f;
+           // ActorVO.heroModelScale = 1.0f;
         }
 
         //新场景加载完成后，旧场景才叫退出
@@ -106,8 +84,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         //退出场景前的处理
         public virtual void BeforeExitScene()
         {
-            if (mSceneEffectControl != null)
-                mSceneEffectControl.Dispose();
+           
         }
 
         private void InternalLoadScene()
@@ -136,7 +113,6 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         {
             ShowSceneLoading();
             BeforeLoadScene();
-            GlobalGameObject.Instance.mLevelController.LoadExternalScene(name, InternalLoadSceneCompleted);
         }
 
         protected virtual void InternalLoadSceneCompleted()

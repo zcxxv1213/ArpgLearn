@@ -13,6 +13,9 @@ namespace Assets.Scripts.Com.Game.Events
         ASK_FOR_ENTER_SCENE,
         ENTER_SCENE_STATE,
         RETURN_UI,
-        OPEN_UI
+        OPEN_UI,
+        SHOW_SCENE_LOADING,
+        SHOW_REQUEST_LOADING,
+        CLEAR_BASE_MODEL
     }
 }

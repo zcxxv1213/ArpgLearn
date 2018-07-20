@@ -471,14 +471,16 @@ namespace Assets.Scripts.Com.Game.Core
             {
                 case BgEnum.GRAY:
                     mBackgroundGameObject = BackgroundImagesManager.Instance.SetBackground(gameObject, BackgroundType.BG_3);
-                    GameUIEventListener.Get(mBackgroundGameObject, 0).onClick = OnClickHideView;
+                    //TODO AddBtbListener
+                  //  GameUIEventListener.Get(mBackgroundGameObject, 0).onClick = OnClickHideView;
                     break;
                 case BgEnum.TRANSPARENT:
                     mBackgroundGameObject = BackgroundImagesManager.Instance.SetBackground(gameObject, BackgroundType.BG_3);
                     break;
                 case BgEnum.TRANSPARENT_CLICKABLE:
                     mBackgroundGameObject = BackgroundImagesManager.Instance.SetBackground(gameObject, BackgroundType.BG_3);
-                    GameUIEventListener.Get(mBackgroundGameObject, 0).onClick = OnClickHideView;
+                    //TODO AddBtbListener
+                    // GameUIEventListener.Get(mBackgroundGameObject, 0).onClick = OnClickHideView;
                     break;
             }
         }
