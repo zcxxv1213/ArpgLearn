@@ -1,0 +1,26 @@
+ManifestFileVersion: 0
+CRC: 4220292333
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: ui/login/login_view
+      Dependencies:
+        Dependency_0: common/login
+        Dependency_1: common/backimg_3
+        Dependency_2: common/backimg_2
+        Dependency_3: common/backimg_1
+    Info_1:
+      Name: ui/view_root/view_root
+      Dependencies: {}
+    Info_2:
+      Name: common/login
+      Dependencies: {}
+    Info_3:
+      Name: common/backimg_3
+      Dependencies: {}
+    Info_4:
+      Name: common/backimg_2
+      Dependencies: {}
+    Info_5:
+      Name: common/backimg_1
+      Dependencies: {}

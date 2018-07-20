@@ -1,0 +1,21 @@
+ManifestFileVersion: 0
+CRC: 489472895
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: fa95c0fda2616b7eff1c902108441ccc
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: ea5a42e0fd8ea905efa7aa926a3b8944
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AssetsLibrary/ui/UIResourceSet/Old/Img/Img_2.png
+- Assets/AssetsLibrary/ui/UIResourceSet/Old/Img/Img_1.png
+- Assets/AssetsLibrary/ui/UIResourceSet/Old/Img/Img_36.png
+- Assets/AssetsLibrary/ui/UIResourceSet/Old/Old_Btn/Btn_1_1.png
+Dependencies: []
