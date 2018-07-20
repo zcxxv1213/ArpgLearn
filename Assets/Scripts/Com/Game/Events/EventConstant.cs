@@ -9,6 +9,10 @@ namespace Assets.Scripts.Com.Game.Events
         SHOW_ALERT,
         LOAD_REMOTE_ERROR,
         RETRY_CHECK_VERSION,
-        MAX_COUNT
+        MAX_COUNT,
+        ASK_FOR_ENTER_SCENE,
+        ENTER_SCENE_STATE,
+        RETURN_UI,
+        OPEN_UI
     }
 }
