@@ -79,9 +79,8 @@ namespace Assets.Scripts.Com.Game.Core
         protected override void InternalOnViewShow()
         {
             base.InternalOnViewShow();
-
-            sUIManager.OnLayerShow(mViewParam.ParentLayer, this);
-
+            // sUIManager.OnLayerShow(mViewParam.ParentLayer, this);
+            sUIManager.OnLayerShow(this);
             if (CheckHideUnderLayer())
             {
                 mUnderLayerWindowList = sUIManager.GetUnderNormalLayerWindows(mViewParam.ParentLayer);

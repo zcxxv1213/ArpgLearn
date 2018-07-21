@@ -18,7 +18,7 @@ namespace Assets.Scripts.Com.Game.Utils
         {
             childTrans.SetParent(parentTrans);
             childTrans.localPosition = Vector3.zero;
-            childTrans.localScale = Vector3.zero; 
+            childTrans.localScale = Vector3.one; 
         }
 
         public static void SetLayer(GameObject go, int layer, bool loopChild = false)

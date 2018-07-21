@@ -264,6 +264,15 @@ namespace Assets.Scripts.Com.Game.Core
         {
             ToggleShow(!mIsShow);
         }
+        public Transform GetViewCurParent()
+        {
+            if (this.gameObject)
+            {
+                return this.gameObject.transform.parent;
+            }
+            else
+                return null; 
+        }
 
         protected bool mPreloadShowView { get; private set; }
         //预加载界面

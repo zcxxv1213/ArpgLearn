@@ -9,6 +9,7 @@ using Com.Game.Core;
 using Assets.Scripts.Com.Manager;
 using Com.Game.Utils.Timers;
 using UnityEngine.UI;
+using Com.Game.Manager;
 
 namespace Assets.Scripts.Com.Game.Manager
 {
@@ -24,6 +25,7 @@ namespace Assets.Scripts.Com.Game.Manager
 
         public static Camera mUICamera;
 
+        public bool ifLoadBundle = false;
         public Transform mTransform { get; private set; }
 
         GameObject mViewRoot;
@@ -31,8 +33,6 @@ namespace Assets.Scripts.Com.Game.Manager
         public float mDeviceWidth { get; private set; }
         public float mDeviceHeight { get; private set; }
 
-        private GameObject mJoystick;
-        private GameObject mLogin;
         public GameObject mNormal { get; private set; }
         private GameObject mBattle;
         private GameObject mGlobal;
@@ -46,7 +46,7 @@ namespace Assets.Scripts.Com.Game.Manager
         public int mLayerSortingOrder;
         public int mLayerPosZ;
         public Dictionary<RectTransform, int> mUILayerStatus = new Dictionary<RectTransform, int>();
-        public Dictionary<BaseView, BaseView> mShowWindowList = new Dictionary<BaseView, BaseView>();
+        public Dictionary<BaseView, Transform> mShowWindowList = new Dictionary<BaseView, Transform>();
 
         public GameObject mLoginPanel { get; private set; }
         public GameObject mLoginLayer { get; private set; }
@@ -152,6 +152,20 @@ namespace Assets.Scripts.Com.Game.Manager
         //TODO UseSyncLoaderManagerLoad
         public void LoadView(string path, string viewName, Action<GameObject> callBack)
         {
+            if (ifLoadBundle)
+            {
+                SyncResourceManager.LoadUI(path, viewName, (T1, T2) =>
+                {
+                    callBack((GameObject)T1);
+                });
+            }
+            else
+            {
+                ResourceManager.LoadPrefab(path, viewName, (T1, T2) =>
+                 {
+                     callBack((GameObject)T1);
+                 });
+            }
         }
 
         public void Init()
@@ -166,7 +180,7 @@ namespace Assets.Scripts.Com.Game.Manager
 
             mTransform = mViewRoot.transform;
             this.mCanvasTrans = mTransform.Find("Canvas");
-            CanvasScaler canvasScaler = mTransform.GetComponent<CanvasScaler>();
+            CanvasScaler canvasScaler = this.mCanvasTrans.GetComponent<CanvasScaler>();
             Vector2 referenceResolution =  canvasScaler.referenceResolution;
             float rate = Screen.width / Screen.height;
             float canvasWidth = referenceResolution.y * rate;
@@ -226,16 +240,21 @@ namespace Assets.Scripts.Com.Game.Manager
             mGlobalLayerList.Add(mSceneLoadingLayer);
             mGlobalLayerList.Add(mInteractiveLayer);
 
-            mUICamera = mCanvasTrans.Find("UICamera").GetComponent<Camera>();
+            mUICamera = mTransform.Find("UICamera").GetComponent<Camera>();
+            this.AddListener();
         }
 
+        private void AddListener()
+        {
+            mEventDispatcher.AddEventListener<int, object>(EventConstant.OPEN_UI_WITH_PARAM, OnOpenUI);
+        }
         private void CreateInteractiveLayer()
         {
             Transform layer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mInteractiveLayer").transform);
             mInteractiveLayer = layer.gameObject;
             RectTransform rect = mInteractiveLayer.GetComponent<RectTransform>();
             Image img = mInteractiveLayer.AddComponent<Image>();
-            rect.sizeDelta = Vector3.zero;
+            rect.sizeDelta = Vector3.one;
             img.color = new Color(1, 1, 1, 0);
             this.GlobalClickEnable(true);
         }
@@ -244,9 +263,9 @@ namespace Assets.Scripts.Com.Game.Manager
         {
             GameObject layer = new GameObject(panelName);
             layer.layer = 5;//UI
-            RectTransform rect = layer.GetComponent<RectTransform>();
+            RectTransform rect = layer.AddComponent<RectTransform>();
             GameObjectUtil.SetParent(rect, trans);
-            rect.anchorMax = Vector3.zero;
+            rect.anchorMax = Vector3.one;
             rect.anchorMin = Vector3.zero;
             rect.sizeDelta = Vector3.zero;
             this.mUILayerStatus[rect] = disposeState;
@@ -256,7 +275,7 @@ namespace Assets.Scripts.Com.Game.Manager
         private Transform AddCanvas(Transform layer,AdditionalCanvasShaderChannels shaderChannels = 0)
         {
             GameObject go = layer.gameObject;
-            Canvas canvas = go.GetComponent<Canvas>();
+            Canvas canvas = go.AddComponent<Canvas>();
             GraphicRaycaster raycaster = go.AddComponent<GraphicRaycaster>();
             canvas.overrideSorting = true;
             this.mLayerSortingOrder += 10;
@@ -305,7 +324,10 @@ namespace Assets.Scripts.Com.Game.Manager
             mPopLayerList.Add(go);
             return go;
         }
-
+        public void SetCameraClearFlags(CameraClearFlags flag)
+        {
+            mUICamera.clearFlags = flag;
+        }
         private void OnToggleUI(int viewEnum, ToggleUIType type, object paramObject)
         {
             switch (type)
@@ -709,6 +731,8 @@ namespace Assets.Scripts.Com.Game.Manager
             int bgEnum = (int)viewParam.bgEnum;
             if (bgEnum != 0)
             {
+                if (bgEnum == (int)BgEnum.NONE)
+                    return 1;
               /*  if (bgEnum >= (int)BgEnum.BG1)
                 {
                     return 2;
@@ -821,21 +845,21 @@ namespace Assets.Scripts.Com.Game.Manager
                 }, true);
             }
         }
-        
+
         //当某个层级有界面显示的时候调用这个函数
-        public void OnLayerShow(GameObject go, BaseWindow baseWindow)
+        /* public void OnLayerShow(GameObject go, BaseWindow baseWindow)
+         {
+             int fullScreenValue = IsFullScreenWindow(baseWindow);
+
+             if (fullScreenValue > 0)
+             {
+
+             }
+         }*/
+        public void OnLayerShow(BaseWindow baseWindow)
         {
-            if (go == mLoginLayer)
-            {
-                mLogin.SetActive(true);
-            }
-
-            int fullScreenValue = IsFullScreenWindow(baseWindow);
-
-            if (fullScreenValue > 0)
-            {
-              
-            }
+            Transform mCurViewParent = baseWindow.GetViewCurParent();
+            this.mShowWindowList[baseWindow] = mCurViewParent;
         }
 
         //当某个层级有界面隐藏的时候调用这个函数
@@ -870,8 +894,6 @@ namespace Assets.Scripts.Com.Game.Manager
         {
             mNormal.SetActive(normal);
             mBattle.SetActive(battle);
-
-            mLogin.SetActive(false);
         }
 
         public void DisposeAllLayers(bool forceDispose)
@@ -966,7 +988,6 @@ namespace Assets.Scripts.Com.Game.Manager
         //过场动画时屏蔽所有UI. 可能在主城或者战斗场景
         public void OnCGEnter()
         {
-            mJoystick.SetActive(false);
             mBattle.SetActive(false);
             mGlobal.SetActive(false);
 

@@ -3,13 +3,14 @@ namespace Assets.Scripts.Com.Game.Events
 {
     public enum EventConstant : int
     {
-        OPEN_LOGIN_VIEW = 0,
+       
+        OPEN_LOGIN_VIEW ,
         UPDATE_TIP,
         UPDATE_PROGRESS,
         SHOW_ALERT,
         LOAD_REMOTE_ERROR,
         RETRY_CHECK_VERSION,
-        MAX_COUNT,
+        
         ASK_FOR_ENTER_SCENE,
         PRE_LOADING_DONE,
         ENTER_SCENE_STATE,
@@ -17,6 +18,11 @@ namespace Assets.Scripts.Com.Game.Events
         OPEN_UI,
         SHOW_SCENE_LOADING,
         SHOW_REQUEST_LOADING,
-        CLEAR_BASE_MODEL
+        CLEAR_BASE_MODEL,
+        OPEN_UI_WITH_PARAM,
+
+
+
+        MAX_COUNT//Last
     }
 }

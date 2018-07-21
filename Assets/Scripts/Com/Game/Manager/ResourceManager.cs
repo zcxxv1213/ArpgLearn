@@ -17,7 +17,6 @@ namespace Com.Game.Manager
         {
 #if UNITY_EDITOR_WIN || UNITY_EDITOR_OSX
             GameObject go = UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/RawResources/" + viewPath + viewName + ".prefab", typeof(GameObject)) as GameObject;
-            
             GameObject instance = GameObject.Instantiate(go) as GameObject;
             CallBack(instance, null);
            // luaCallBack.Call(instance);

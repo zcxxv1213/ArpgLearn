@@ -23,7 +23,8 @@ namespace Com.Game.Manager
         static async public Task Init()
         {
             await LoadManifest(ResourceURL.GetUrl("StreamingAssets"));
-            await LoadExternaManifest(ResourceURL.GetExternalUrl("StreamingAssets"));
+            //TODO ADD ART WORK SPACE
+           // await LoadExternaManifest(ResourceURL.GetExternalUrl("StreamingAssets"));
             return;
         }
 

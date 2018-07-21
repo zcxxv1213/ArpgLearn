@@ -116,10 +116,10 @@ namespace Assets.Scripts.Com.Manager
             switch (sceneId)
             {
                 case mLoginSceneID:
-                    mCurScene = new BaseScene(0);//TODO LoginScene;
+                    mCurScene = new LoginScene(0);//TODO LoginScene;
                     break;
                 case mMainSceneID:
-                    mCurScene = new BaseScene(0);//TODO MainScene;
+                    mCurScene = new BaseScene(1);//TODO MainScene;
                     break;
                 default:
                     break;

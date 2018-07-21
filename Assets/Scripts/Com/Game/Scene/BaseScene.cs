@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Com.Game.Module.Scene
 {
-    class BaseScene
+    public class BaseScene
     {
         public int mSceneId = 0;
         public float defaultFov { get; protected set; }
@@ -69,7 +69,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
             LoadScene();
         }
         //Override to ChangeLoad Method
-        protected virtual void LoadScene()
+        public virtual void LoadScene()
         {
             LoadSceneByName(GetSceneName());
         }

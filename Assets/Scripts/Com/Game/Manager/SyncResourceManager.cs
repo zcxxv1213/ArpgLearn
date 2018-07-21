@@ -55,13 +55,14 @@ namespace Com.Game.Manager
             mManifest = (AssetBundleManifest)manifestBundle.LoadAsset(assetBundleManifestStr, typeof(AssetBundleManifest));
             manifestBundle.Unload(false);
             www.Dispose();
-
+            //TODO ADD ART WORK SPACE
+            /*
             WWW www1 = new WWW(ResourceURL.GetExternalUrl(streamingAssetsStr));
             await new WaitUntil(() => www1.isDone);
             AssetBundle manifestBundle1 = www1.assetBundle;
             mExternalManifest = (AssetBundleManifest)manifestBundle1.LoadAsset(assetBundleManifestStr, typeof(AssetBundleManifest));
             manifestBundle1.Unload(false);
-            www1.Dispose();
+            www1.Dispose();*/
             mCallBackDelegate();
             //  mInitCallback.Call();
             mCallBackDelegate = null;
