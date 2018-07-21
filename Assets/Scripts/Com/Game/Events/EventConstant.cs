@@ -11,6 +11,7 @@ namespace Assets.Scripts.Com.Game.Events
         RETRY_CHECK_VERSION,
         MAX_COUNT,
         ASK_FOR_ENTER_SCENE,
+        PRE_LOADING_DONE,
         ENTER_SCENE_STATE,
         RETURN_UI,
         OPEN_UI,

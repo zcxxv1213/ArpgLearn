@@ -11,7 +11,9 @@ namespace Assets.Scripts.Com.Manager
     class SceneManager : Singleton<SceneManager>
     {
         public int mSceneId = -1;
-        public int mSceneIDForLoader = -1; 
+        public int mSceneIDForLoader = -1;
+        private const int mMainSceneID = 1;
+        private const int mLoginSceneID = 0;
         protected EnterSceneStateEnum mEnterSceneState = EnterSceneStateEnum.INIT;
 
         //上一个场景
@@ -25,9 +27,43 @@ namespace Assets.Scripts.Com.Manager
 
         public void Init()
         {
+            EventDispatcher.Instance.AddEventListener(EventConstant.PRE_LOADING_DONE, OnPreloadingComplete);
             EventDispatcher.Instance.AddEventListener<int>(EventConstant.ASK_FOR_ENTER_SCENE, EnterSceneById);
         }
 
+        private void OnPreloadingComplete()
+        {
+            this.BeforeEnterScene(mCurScene.mSceneId);
+        }
+
+        private void BeforeEnterScene(int sceneID)
+        {
+            Debug.Log("Release memory");
+            int preID = 0;
+            bool enterBattle = false;
+            bool leaveBattle = false;
+            bool reLogin = false;
+            if (mPrevScene!=null)
+            {
+                preID = mPrevScene.mSceneId; 
+            }
+            if (preID > mMainSceneID)
+            {
+                leaveBattle = true;
+            }
+            if (sceneID > mMainSceneID)
+            {
+                enterBattle = true; 
+            }
+            if (mPrevScene != null && sceneID == mLoginSceneID)
+                reLogin = true;
+
+            if (mPrevScene != null)
+                mPrevScene.BeforeExitScene();
+
+            MemoryManager.Instance.BeforeEnterScene(reLogin, enterBattle, leaveBattle);
+            mCurScene.BeforeEnterScene();
+        }
         public EnterSceneStateEnum EnterSceneState
         {
             get { return mEnterSceneState; }
@@ -79,15 +115,18 @@ namespace Assets.Scripts.Com.Manager
             mSceneId = sceneId;
             switch (sceneId)
             {
-              
+                case mLoginSceneID:
+                    mCurScene = new BaseScene(0);//TODO LoginScene;
+                    break;
+                case mMainSceneID:
+                    mCurScene = new BaseScene(0);//TODO MainScene;
+                    break;
                 default:
                     break;
             }
-
-
             Debug.Log("sceneID:" + sceneId);
-            mCurScene.mSceneId = sceneId;
-            mCurScene.BeforeEnterScene();
+            // mCurScene.BeforeEnterScene();
+            this.BeforeEnterScene(sceneId);
             mSceneIDForLoader = mSceneId;
         }
 

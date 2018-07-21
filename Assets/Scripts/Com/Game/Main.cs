@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System;
 using Assets.Scripts.Com.Game.Manager;
 using static Com.Game.Manager.SyncResourceManager;
+using Assets.Scripts.Com.Manager;
 
 public class Main : MonoBehaviour
 {
@@ -28,8 +29,9 @@ public class Main : MonoBehaviour
     async Task LoadInit()
     {
         await AsyncResourceManager.Init();
-        await SyncResourceManager.Init(new CallBackDelegate(() => UIManager.Instance.Init()));
-
+        await SyncResourceManager.Init(new CallBackDelegate(() => UIManager.Instance.Init()
+        ));
+        SceneManager.Instance.EnterSceneById(0);
     }
     void Update()
     {

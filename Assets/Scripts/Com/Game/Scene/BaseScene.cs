@@ -21,9 +21,9 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         protected SceneEnum mType;
         protected EnterSceneStateEnum mLoadSceneCompleteState;
 
-        public BaseScene()
+        public BaseScene(int sceneID)
         {
-
+            mSceneId = sceneID;
         }
         public int GetSceneID()
         {
@@ -39,26 +39,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         {
             return false;
         }
-        //碰壁是否需要自动转向
-        public virtual bool AutoTurn()
-        {
-            return true;
-        }
-        public virtual bool ShowHitEffect()
-        {
-            return true;
-        }
-
-        public virtual bool PreloadSound()
-        {
-            return false;
-        }
-
-        protected void InitSceneConfig()
-        {
-          
-        }
-
+        
         
         public virtual void EnterScene()
         {
@@ -66,15 +47,9 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         }
         public virtual void BeforeEnterScene()
         {
-            InitSceneSettings();
             InternalLoadScene();
         }
-
-        public virtual void InitSceneSettings()
-        {
-           // ActorVO.heroModelScale = 1.0f;
-        }
-
+        
         //新场景加载完成后，旧场景才叫退出
         public virtual void ExitScene()
         {
@@ -93,7 +68,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
 
             LoadScene();
         }
-
+        //Override to ChangeLoad Method
         protected virtual void LoadScene()
         {
             LoadSceneByName(GetSceneName());
@@ -111,7 +86,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
 
         private void LoadSceneByName(string name)
         {
-            ShowSceneLoading();
+         //   ShowSceneLoading();
             BeforeLoadScene();
         }
 

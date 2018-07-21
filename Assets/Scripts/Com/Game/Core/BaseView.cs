@@ -400,6 +400,11 @@ namespace Assets.Scripts.Com.Game.Core
             }
         }
 
+        public void OnChangeScene()
+        {
+
+        }
+
         public void HideView()
         {
             if (mIsShow == false)

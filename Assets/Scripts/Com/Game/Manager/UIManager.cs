@@ -51,12 +51,14 @@ namespace Assets.Scripts.Com.Game.Manager
         public GameObject mLoginPanel { get; private set; }
         public GameObject mLoginLayer { get; private set; }
         public GameObject mLoginLayer1 { get; private set; }
+        private List<GameObject> mLoginLayerList = new List<GameObject>();
 
         public GameObject mMainPanel { get; private set; }
         public GameObject mMainLayer { get; private set; }
         public GameObject mMainLayer1 { get; private set; }
         public GameObject mMainLayer2 { get; private set; }
         public GameObject mMainPop { get; private set; }
+        private List<GameObject> mMainLayerList = new List<GameObject>();
         //战斗界面层级
         public GameObject mBattleBloodLayer { get; private set; }
         public GameObject mBattlePanel { get; private set; }
@@ -64,11 +66,12 @@ namespace Assets.Scripts.Com.Game.Manager
         public GameObject mBattleLayer2 { get; private set; }
         public GameObject mBattleLayer3 { get; private set; }
         public GameObject mBattlePop { get; private set; }
-
+        private List<GameObject> mBattleLayerList = new List<GameObject>();
 
         public GameObject mCommonPanel { get; private set; }
         public GameObject mCommonPopLayer1 { get; private set; }
         public GameObject mCommonPopLayer2 { get; private set; }
+        private List<GameObject> mCommonLayerList = new List<GameObject>();
 
         public GameObject mGlobalPanel { get; private set; }
         public GameObject mPopLayer { get; private set; }
@@ -76,6 +79,7 @@ namespace Assets.Scripts.Com.Game.Manager
         public GameObject mSceneLoadingLayer { get; private set; }
 
         public GameObject mInteractiveLayer { get; private set; }
+        private List<GameObject> mGlobalLayerList = new List<GameObject>();
         //角色信息界面
         public GameObject mPlayerInfoView { get; private set; }
 
@@ -122,17 +126,7 @@ namespace Assets.Scripts.Com.Game.Manager
 
         //banner控制的返回列表
         private LinkedList<BaseWindow> mQueueWindowList = new LinkedList<BaseWindow>();
-
-        public void OpenUIWithParamFromLua(int viewID, object obj)
-        {
-            OnOpenUI(viewID, obj);
-        }
-
-        public void OpenUIFromLua(string windowName)
-        {
-            OnOpenUI(mBaseWindowIDDic[windowName], null);
-        }
-
+        
         public int RegisterView(Type baseWindow)
         {
             mBaseWindowTypeDic[++mViewIndex] = baseWindow;
@@ -193,28 +187,45 @@ namespace Assets.Scripts.Com.Game.Manager
             mLoginPanel = this.CreateLayer(mCanvasTrans, "mLoginPanel");
             mLoginLayer = this.CreateLayer(mLoginPanel.transform, "mLoginLayer",1);
             mLoginLayer1 = this.CreateLayer(mLoginPanel.transform, "mLoginLayer1", 1);
+            mLoginLayerList.Add(mLoginLayer);
+            mLoginLayerList.Add(mLoginLayer1);
 
             mMainPanel = this.CreateLayer(mCanvasTrans, "mMainPanel");
             mMainLayer = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainLayer", 2).transform).gameObject;
             mMainLayer1 = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainLayer1", 2).transform).gameObject;
             mMainLayer2 = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainLayer2", 2).transform).gameObject;
             mMainPop = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainPop", 2).transform).gameObject;
+            mMainLayerList.Add(mMainLayer);
+            mMainLayerList.Add(mMainLayer1);
+            mMainLayerList.Add(mMainLayer2);
+            mMainLayerList.Add(mMainPop);
 
             mBattlePanel = this.CreateLayer(mCanvasTrans, "mBattlePanel");
             mBattleLayer1 = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattleLayer1", 1).transform).gameObject;
             mBattleLayer2 = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattleLayer2", 1).transform).gameObject;
             mBattleLayer3 = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattleLayer3", 1).transform).gameObject;
             mBattlePop = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattlePop", 1).transform).gameObject;
+            mBattleLayerList.Add(mBattleLayer1);
+            mBattleLayerList.Add(mBattleLayer2);
+            mBattleLayerList.Add(mBattleLayer3);
+            mBattleLayerList.Add(mBattlePop);
 
             mCommonPanel = this.CreateLayer(mCanvasTrans, "mCommonPanel");
             mCommonPopLayer1 = this.AddCanvas(this.CreateLayer(mCommonPanel.transform, "mCommonPopLayer1", 1).transform).gameObject;
             mCommonPopLayer2 = this.AddCanvas(this.CreateLayer(mCommonPanel.transform, "mCommonPopLayer2", 1).transform).gameObject;
+            mCommonLayerList.Add(mCommonPopLayer1);
+            mCommonLayerList.Add(mCommonPopLayer2); 
 
             mGlobalPanel = this.CreateLayer(mCanvasTrans, "mGlobalPanel");
             mPopLayer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mPopLayer").transform).gameObject;
             mLoadingLayer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mLoadingLayer").transform).gameObject;
             mSceneLoadingLayer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mSceneLoadingLayer").transform).gameObject;
             CreateInteractiveLayer();
+            mGlobalLayerList.Add(mPopLayer);
+            mGlobalLayerList.Add(mLoadingLayer);
+            mGlobalLayerList.Add(mSceneLoadingLayer);
+            mGlobalLayerList.Add(mInteractiveLayer);
+
             mUICamera = mCanvasTrans.Find("UICamera").GetComponent<Camera>();
         }
 
@@ -863,6 +874,30 @@ namespace Assets.Scripts.Com.Game.Manager
             mLogin.SetActive(false);
         }
 
+        public void DisposeAllLayers(bool forceDispose)
+        {
+            foreach (var v in mLoginLayerList)
+            {
+                this.DisposeLayerViews(v, forceDispose);
+            }
+            foreach (var v in mMainLayerList)
+            {
+                this.DisposeLayerViews(v, forceDispose);
+            }
+            foreach (var v in mBattleLayerList)
+            {
+                this.DisposeLayerViews(v, forceDispose);
+            }
+            foreach (var v in mCommonLayerList)
+            {
+                this.DisposeLayerViews(v, forceDispose);
+            }
+            foreach (var v in mGlobalLayerList)
+            {
+                this.DisposeLayerViews(v, forceDispose);
+            }
+        }
+
         //释放指定层级下的所有界面
         //forceDispose为true时强制释放，为false时当界面是隐藏状态下才释放
         public void DisposeLayerViews(GameObject layer, bool forceDispose = false)
@@ -872,8 +907,23 @@ namespace Assets.Scripts.Com.Game.Manager
             for (int i = windowList.Count - 1; i >= 0; i--)
             {
                 BaseWindow baseWindow = windowList[i];
+                if (!forceDispose)
+                {
+                    if (this.mUILayerStatus[baseWindow.transform.GetComponent<RectTransform>()] == 1)
+                    {
+                        if (baseWindow.mDisposeRemoveViewID)
+                            mBaseWindowDic.Remove(baseWindow.mViewID);
 
-                if (forceDispose || baseWindow.mIsShow == false)
+                        windowList.RemoveAt(i);
+
+                        baseWindow.CloseView();
+                    }
+                    else if (this.mUILayerStatus[baseWindow.transform.GetComponent<RectTransform>()] == 2)
+                    {
+                        baseWindow.OnChangeScene();
+                    }
+                }
+                if (forceDispose)
                 {
                     if (baseWindow.mDisposeRemoveViewID)
                         mBaseWindowDic.Remove(baseWindow.mViewID);
