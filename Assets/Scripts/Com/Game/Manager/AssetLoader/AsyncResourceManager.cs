@@ -20,22 +20,25 @@ namespace Com.Game.Manager
 
         public delegate string[] GetDependBundlesFuncDelegate(string assetBundleName);
         public delegate string GetPathFuncDelegate(string assetBundleName);
-        static public void Init()
+        static async public Task Init()
         {
-            LoadManifest(ResourceURL.GetUrl("StreamingAssets"));
-            LoadExternaManifest(ResourceURL.GetExternalUrl("StreamingAssets"));
+            await LoadManifest(ResourceURL.GetUrl("StreamingAssets"));
+            await LoadExternaManifest(ResourceURL.GetExternalUrl("StreamingAssets"));
+            return;
         }
 
-        static public async void LoadManifest(string streamingAssetsStr)
+        static public async Task LoadManifest(string streamingAssetsStr)
         {
             WWW bundle = new WWW(streamingAssetsStr);
             await LoadBundleManifest(bundle,false);
+            return;
         }
 
-        static public async void LoadExternaManifest(string streamingAssetsStr)
+        static public async Task LoadExternaManifest(string streamingAssetsStr)
         {
             WWW externalBundle = new WWW(streamingAssetsStr);
             await LoadBundleManifest(externalBundle, true);
+            return ;
         }
         static async Task LoadBundleManifest(WWW bundle, bool ifExternal)
         {

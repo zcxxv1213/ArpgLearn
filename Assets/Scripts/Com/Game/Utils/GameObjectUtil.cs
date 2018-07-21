@@ -13,6 +13,14 @@ namespace Assets.Scripts.Com.Game.Utils
         {
             return GameObject.Instantiate(original);
         }
+
+        public static void SetParent(Transform childTrans, Transform parentTrans)
+        {
+            childTrans.SetParent(parentTrans);
+            childTrans.localPosition = Vector3.zero;
+            childTrans.localScale = Vector3.zero; 
+        }
+
         public static void SetLayer(GameObject go, int layer, bool loopChild = false)
         {
             go.layer = layer;

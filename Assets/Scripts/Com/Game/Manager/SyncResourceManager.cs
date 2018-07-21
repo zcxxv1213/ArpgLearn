@@ -34,14 +34,16 @@ namespace Com.Game.Manager
         public delegate void LoadFunc(Bundle bundle, string objectName, CallBackDelegate<object, object> callBack, string assetBundlePath = "");
         public delegate string[] GetDependBundlesFunc(string assetBundleName);
         public delegate string GetPathFunc(string assetBundleName);
-        static public void Init(CallBackDelegate callBack)
+        static async public Task Init(CallBackDelegate callBack)
         {
             mCallBackDelegate = callBack;
-            InitSub();
+            await InitSub();
+            return;
         }
-        static private async void InitSub()
+        static private async Task InitSub()
         {
             await LoadManifest();
+            return;
         }
         static private async Task LoadManifest()
         {

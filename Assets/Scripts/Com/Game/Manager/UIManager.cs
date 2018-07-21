@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Com.Game.Core;
 using Assets.Scripts.Com.Manager;
 using Com.Game.Utils.Timers;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Com.Game.Manager
 {
@@ -21,14 +22,14 @@ namespace Assets.Scripts.Com.Game.Manager
     public class UIManager : Singleton<UIManager>
     {
 
-        public static Camera sUICamera;
+        public static Camera mUICamera;
 
         public Transform mTransform { get; private set; }
 
         GameObject mViewRoot;
 
-        public int mDeviceWidth { get; private set; }
-        public int mDeviceHeight { get; private set; }
+        public float mDeviceWidth { get; private set; }
+        public float mDeviceHeight { get; private set; }
 
         private GameObject mJoystick;
         private GameObject mLogin;
@@ -38,15 +39,43 @@ namespace Assets.Scripts.Com.Game.Manager
         private GameObject mGlobalContainerPop3;
         private GameObject mGlobalContainerNet;
         public GameObject mLoginBackgroundLayer { get; private set; }
-        public GameObject mLoginLayer { get; private set; }
+       
+        public Transform mCanvasTrans;
+        public float mScaleFactor;
+        private Dictionary<Transform,int> mLayerSortingOrderList = new Dictionary<Transform, int>();
+        public int mLayerSortingOrder;
+        public int mLayerPosZ;
+        public Dictionary<RectTransform, int> mUILayerStatus = new Dictionary<RectTransform, int>();
+        public Dictionary<BaseView, BaseView> mShowWindowList = new Dictionary<BaseView, BaseView>();
 
+        public GameObject mLoginPanel { get; private set; }
+        public GameObject mLoginLayer { get; private set; }
+        public GameObject mLoginLayer1 { get; private set; }
+
+        public GameObject mMainPanel { get; private set; }
+        public GameObject mMainLayer { get; private set; }
+        public GameObject mMainLayer1 { get; private set; }
+        public GameObject mMainLayer2 { get; private set; }
+        public GameObject mMainPop { get; private set; }
         //战斗界面层级
         public GameObject mBattleBloodLayer { get; private set; }
+        public GameObject mBattlePanel { get; private set; }
         public GameObject mBattleLayer1 { get; private set; }
         public GameObject mBattleLayer2 { get; private set; }
         public GameObject mBattleLayer3 { get; private set; }
         public GameObject mBattlePop { get; private set; }
 
+
+        public GameObject mCommonPanel { get; private set; }
+        public GameObject mCommonPopLayer1 { get; private set; }
+        public GameObject mCommonPopLayer2 { get; private set; }
+
+        public GameObject mGlobalPanel { get; private set; }
+        public GameObject mPopLayer { get; private set; }
+        public GameObject mLoadingLayer { get; private set; }
+        public GameObject mSceneLoadingLayer { get; private set; }
+
+        public GameObject mInteractiveLayer { get; private set; }
         //角色信息界面
         public GameObject mPlayerInfoView { get; private set; }
 
@@ -133,7 +162,7 @@ namespace Assets.Scripts.Com.Game.Manager
 
         public void Init()
         {
-            LoadView("UI/ViewRoot/ViewRoot", "ViewRoot", SetRoot);
+            LoadView("ui/view_root/", "view_root", new Action<GameObject> (SetRoot));
         }
 
         private void SetRoot(GameObject go)
@@ -142,7 +171,96 @@ namespace Assets.Scripts.Com.Game.Manager
             GameObject.DontDestroyOnLoad(mViewRoot);
 
             mTransform = mViewRoot.transform;
-           
+            this.mCanvasTrans = mTransform.Find("Canvas");
+            CanvasScaler canvasScaler = mTransform.GetComponent<CanvasScaler>();
+            Vector2 referenceResolution =  canvasScaler.referenceResolution;
+            float rate = Screen.width / Screen.height;
+            float canvasWidth = referenceResolution.y * rate;
+            if (canvasWidth < referenceResolution.x)
+            {
+                canvasScaler.matchWidthOrHeight = 0;
+                mScaleFactor = Screen.width / referenceResolution.x;
+            }
+            else
+            {
+                mScaleFactor = Screen.height / referenceResolution.y;
+            }
+            RectTransform rectTransform = this.mCanvasTrans.GetComponent<RectTransform>();
+            this.mDeviceWidth = rectTransform.sizeDelta.x;
+            this.mDeviceHeight = rectTransform.sizeDelta.y;
+            this.mLayerSortingOrder = 1;
+            this.mLayerPosZ = 0;
+            mLoginPanel = this.CreateLayer(mCanvasTrans, "mLoginPanel");
+            mLoginLayer = this.CreateLayer(mLoginPanel.transform, "mLoginLayer",1);
+            mLoginLayer1 = this.CreateLayer(mLoginPanel.transform, "mLoginLayer1", 1);
+
+            mMainPanel = this.CreateLayer(mCanvasTrans, "mMainPanel");
+            mMainLayer = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainLayer", 2).transform).gameObject;
+            mMainLayer1 = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainLayer1", 2).transform).gameObject;
+            mMainLayer2 = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainLayer2", 2).transform).gameObject;
+            mMainPop = this.AddCanvas(this.CreateLayer(mMainPanel.transform, "mMainPop", 2).transform).gameObject;
+
+            mBattlePanel = this.CreateLayer(mCanvasTrans, "mBattlePanel");
+            mBattleLayer1 = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattleLayer1", 1).transform).gameObject;
+            mBattleLayer2 = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattleLayer2", 1).transform).gameObject;
+            mBattleLayer3 = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattleLayer3", 1).transform).gameObject;
+            mBattlePop = this.AddCanvas(this.CreateLayer(mBattlePanel.transform, "mBattlePop", 1).transform).gameObject;
+
+            mCommonPanel = this.CreateLayer(mCanvasTrans, "mCommonPanel");
+            mCommonPopLayer1 = this.AddCanvas(this.CreateLayer(mCommonPanel.transform, "mCommonPopLayer1", 1).transform).gameObject;
+            mCommonPopLayer2 = this.AddCanvas(this.CreateLayer(mCommonPanel.transform, "mCommonPopLayer2", 1).transform).gameObject;
+
+            mGlobalPanel = this.CreateLayer(mCanvasTrans, "mGlobalPanel");
+            mPopLayer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mPopLayer").transform).gameObject;
+            mLoadingLayer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mLoadingLayer").transform).gameObject;
+            mSceneLoadingLayer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mSceneLoadingLayer").transform).gameObject;
+            CreateInteractiveLayer();
+            mUICamera = mCanvasTrans.Find("UICamera").GetComponent<Camera>();
+        }
+
+        private void CreateInteractiveLayer()
+        {
+            Transform layer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mInteractiveLayer").transform);
+            mInteractiveLayer = layer.gameObject;
+            RectTransform rect = mInteractiveLayer.GetComponent<RectTransform>();
+            Image img = mInteractiveLayer.AddComponent<Image>();
+            rect.sizeDelta = Vector3.zero;
+            img.color = new Color(1, 1, 1, 0);
+            this.GlobalClickEnable(true);
+        }
+
+        private GameObject CreateLayer(Transform trans, string panelName, int disposeState = 0)
+        {
+            GameObject layer = new GameObject(panelName);
+            layer.layer = 5;//UI
+            RectTransform rect = layer.GetComponent<RectTransform>();
+            GameObjectUtil.SetParent(rect, trans);
+            rect.anchorMax = Vector3.zero;
+            rect.anchorMin = Vector3.zero;
+            rect.sizeDelta = Vector3.zero;
+            this.mUILayerStatus[rect] = disposeState;
+            return rect.gameObject;
+        }
+
+        private Transform AddCanvas(Transform layer,AdditionalCanvasShaderChannels shaderChannels = 0)
+        {
+            GameObject go = layer.gameObject;
+            Canvas canvas = go.GetComponent<Canvas>();
+            GraphicRaycaster raycaster = go.AddComponent<GraphicRaycaster>();
+            canvas.overrideSorting = true;
+            this.mLayerSortingOrder += 10;
+            canvas.sortingOrder = this.mLayerSortingOrder;
+            this.mLayerSortingOrderList[layer] = this.mLayerSortingOrder;
+            if (shaderChannels != 0)
+            {
+                canvas.additionalShaderChannels = shaderChannels;
+            }
+            return MovePosZ(layer);
+        }
+
+        private Transform MovePosZ(Transform layer)
+        {
+            return layer;
         }
 
         private GameObject AddLayerContainer(string containerName)
@@ -810,14 +928,14 @@ namespace Assets.Scripts.Com.Game.Manager
         //控制全局鼠标点击
         public void GlobalClickEnable(bool enable)
         {
-            if (mLockGlobalClickEnable)
-                return;
+          //  if (mLockGlobalClickEnable)
+          //      return;
 
             if (enable == mGlobalClickEnable)
                 return;
 
             mGlobalClickEnable = enable;
-            mMouseControlView.SetActive(!enable);
+           // mMouseControlView.SetActive(!enable);
 
             Debug.Log("GlobalClickEnable:" + enable);
         }
