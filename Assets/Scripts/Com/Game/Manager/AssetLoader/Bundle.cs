@@ -27,6 +27,7 @@ namespace Com.Manager.AssetLoader
         {
             if (this.www == null)
             {
+                Debug.Log(ResourceURL.GetUrl(this.mPath));
                 this.www = new WWW(ResourceURL.GetUrl(this.mPath));
                 return 1;
             }

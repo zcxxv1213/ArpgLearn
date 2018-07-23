@@ -43,14 +43,25 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         
         public virtual void EnterScene()
         {
-        
+            this.ChangePanelVisible();
+            this.OnEnterScene();
+
         }
+        public virtual void OnEnterScene()
+        {
+
+        }
+        public virtual void ChangePanelVisible()
+        {
+            sUIManager.ChangePanelVisible(this.mSceneId);
+        }
+
         public virtual void BeforeEnterScene()
         {
             InternalLoadScene();
         }
         
-        //新场景加载完成后，旧场景才叫退出
+        //新场景加载完成后，旧场景退出
         public virtual void ExitScene()
         {
 

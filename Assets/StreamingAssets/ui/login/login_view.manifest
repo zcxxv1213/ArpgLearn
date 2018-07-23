@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1175702486
+CRC: 2352858
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: d38bd017d5f541cccd2f3ff24041b5e3
+    Hash: bf667f747726fba8e4929c98c1382f01
   TypeTreeHash:
     serializedVersion: 2
     Hash: 5518758b5eb5aa383bf83965a8b2f6ec
@@ -41,6 +41,3 @@ Assets:
 - Assets/RawResources/ui/login/login_view.prefab
 Dependencies:
 - F:/unity_demo/LockStepArpg/Assets/StreamingAssets/common/login
-- F:/unity_demo/LockStepArpg/Assets/StreamingAssets/common/backimg_3
-- F:/unity_demo/LockStepArpg/Assets/StreamingAssets/common/backimg_2
-- F:/unity_demo/LockStepArpg/Assets/StreamingAssets/common/backimg_1

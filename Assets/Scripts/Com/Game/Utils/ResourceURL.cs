@@ -19,6 +19,8 @@ namespace Assets.Scripts.Com.Game.Utils
 
         private const string SCENE_PATH = "scenes/";
 
+        private const string UNITY_SCENES_PATH = "Scenes/";
+
         private const string EXTERNAL_PATH = "external/";
 
         private const string MODEL_PATH = "model/";
@@ -73,6 +75,10 @@ namespace Assets.Scripts.Com.Game.Utils
         public static string GetScenePath()
         {
             return SCENE_PATH;
+        }
+        public static string GetUnityScenePath()
+        {
+            return UNITY_SCENES_PATH;
         }
 
         public static string GetExternalPath(string assetName)

@@ -5,6 +5,7 @@ using Assets.Scripts.Com.Game.Enum;
 using Assets.Scripts.Com.Game.Module.Scene;
 using Assets.Scripts.Com.Game.Manager;
 using Com.Game.Utils.Timers;
+using System;
 
 namespace Assets.Scripts.Com.Manager
 {
@@ -15,7 +16,7 @@ namespace Assets.Scripts.Com.Manager
         private const int mMainSceneID = 1;
         private const int mLoginSceneID = 0;
         protected EnterSceneStateEnum mEnterSceneState = EnterSceneStateEnum.INIT;
-
+        private Action mEnterSceneCallBack = null;
         //上一个场景
         public BaseScene mPrevScene;
 
@@ -73,6 +74,10 @@ namespace Assets.Scripts.Com.Manager
                 EventDispatcher.Instance.Dispatch<EnterSceneStateEnum>(EventConstant.ENTER_SCENE_STATE, mEnterSceneState);
             }
         }
+        public void AddEnterSceneCallBack(Action T)
+        {
+            mEnterSceneCallBack = T;
+        }
 
         public void LoadSceneComplete()
         {
@@ -86,6 +91,11 @@ namespace Assets.Scripts.Com.Manager
             }
 
             mCurScene.EnterScene();
+            if (mEnterSceneCallBack != null)
+            {
+                mEnterSceneCallBack();
+                mEnterSceneCallBack = null;
+            }
         }
 
         public BaseScene GetPreScene()

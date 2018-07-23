@@ -585,6 +585,28 @@ namespace Assets.Scripts.Com.Game.Manager
             }
         }
 
+        public void ChangePanelVisible(int sceneID)
+        {
+            if (sceneID == 0)
+            {
+                mLoginPanel.gameObject.SetActive(true);
+                mMainPanel.gameObject.SetActive(false);
+                mBattlePanel.gameObject.SetActive(false);
+            }
+            else if (sceneID == 1)
+            {
+                mLoginPanel.gameObject.SetActive(false);
+                mMainPanel.gameObject.SetActive(true);
+                mBattlePanel.gameObject.SetActive(false);
+            }
+            else if (sceneID > 1)
+            {
+                mLoginPanel.gameObject.SetActive(false);
+                mMainPanel.gameObject.SetActive(false);
+                mBattlePanel.gameObject.SetActive(true);
+            }   
+        }
+
         public void OpenRebuildView()
         {
             OpenHideRebuildView();
