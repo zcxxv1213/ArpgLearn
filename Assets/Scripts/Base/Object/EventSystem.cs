@@ -14,7 +14,7 @@ namespace ETModel
 
 	public sealed class EventSystem
 	{
-		private readonly Dictionary<long, Component> allComponents = new Dictionary<long, Component>();
+        private readonly Dictionary<long, Component> allComponents = new Dictionary<long, Component>();
 
 		private readonly Dictionary<DLLType, Assembly> assemblies = new Dictionary<DLLType, Assembly>();
 		private readonly List<Type> types = new List<Type>();
@@ -31,7 +31,9 @@ namespace ETModel
 
 		private readonly UnOrderMultiMap<Type, IUpdateSystem> updateSystems = new UnOrderMultiMap<Type, IUpdateSystem>();
 
-		private readonly UnOrderMultiMap<Type, ILateUpdateSystem> lateUpdateSystems = new UnOrderMultiMap<Type, ILateUpdateSystem>();
+        private readonly UnOrderMultiMap<Type, IFrameUpdateSystem> frameSystems = new UnOrderMultiMap<Type, IFrameUpdateSystem>();
+
+        private readonly UnOrderMultiMap<Type, ILateUpdateSystem> lateUpdateSystems = new UnOrderMultiMap<Type, ILateUpdateSystem>();
 
 		private readonly UnOrderMultiMap<Type, IChangeSystem> changeSystems = new UnOrderMultiMap<Type, IChangeSystem>();
 
@@ -45,8 +47,10 @@ namespace ETModel
 
 		private Queue<long> lateUpdates = new Queue<long>();
 		private Queue<long> lateUpdates2 = new Queue<long>();
+        private Queue<long> frames = new Queue<long>();
+        private Queue<long> frames2 = new Queue<long>();
 
-		public void Add(DLLType dllType, Assembly assembly)
+        public void Add(DLLType dllType, Assembly assembly)
 		{
 			this.assemblies[dllType] = assembly;
 			this.types.Clear();
@@ -61,8 +65,9 @@ namespace ETModel
 			this.startSystems.Clear();
 			this.loadSystems.Clear();
 			this.changeSystems.Clear();
+            this.frameSystems.Clear();
 
-			foreach (Type type in types)
+            foreach (Type type in types)
 			{
 				object[] attrs = type.GetCustomAttributes(typeof(ObjectSystemAttribute), false);
 
@@ -84,6 +89,12 @@ namespace ETModel
 				{
 					this.updateSystems.Add(updateSystem.Type(), updateSystem);
 				}
+
+                IFrameUpdateSystem frameSystem = obj as IFrameUpdateSystem;
+                if (frameSystem != null)
+                {
+                    this.frameSystems.Add(frameSystem.Type(), frameSystem);
+                }
 
 				ILateUpdateSystem lateUpdateSystem = obj as ILateUpdateSystem;
 				if (lateUpdateSystem != null)
@@ -181,6 +192,10 @@ namespace ETModel
 			{
 				this.lateUpdates.Enqueue(component.InstanceId);
 			}
+            if (this.frameSystems.ContainsKey(type))
+            {
+                this.frames.Enqueue(component.InstanceId);
+            }
 		}
 
 		public void Remove(long id)
@@ -486,7 +501,47 @@ namespace ETModel
 			ObjectHelper.Swap(ref this.updates, ref this.updates2);
 		}
 
-		public void LateUpdate()
+        public void FrameUpdate()
+        {
+            while (this.frames.Count > 0)
+            {
+                long instanceId = this.frames.Dequeue();
+                Component component;
+                if (!this.allComponents.TryGetValue(instanceId, out component))
+                {
+                    continue;
+                }
+                if (component.IsDisposed)
+                {
+                    continue;
+                }
+
+                List<IFrameUpdateSystem> iFrameSystems = this.frameSystems[component.GetType()];
+                if (iFrameSystems == null)
+                {
+                    continue;
+                }
+
+                this.frames2.Enqueue(instanceId);
+
+                foreach (IFrameUpdateSystem v in iFrameSystems)
+                {
+                    try
+                    {
+                        v.Run(component);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e);
+                    }
+                }
+            }
+
+            ObjectHelper.Swap(ref this.frames, ref this.frames2);
+        }
+
+
+        public void LateUpdate()
 		{
 			while (this.lateUpdates.Count > 0)
 			{
