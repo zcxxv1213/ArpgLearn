@@ -8,17 +8,23 @@ using System;
 using Assets.Scripts.Com.Game.Manager;
 using static Com.Game.Manager.SyncResourceManager;
 using Assets.Scripts.Com.Manager;
+using ETModel;
 
 public class Main : MonoBehaviour
 {
 
     private ResourceManager mResourceManager = ResourceManager.Instance;
     private GameTimerManager mGameTimerManager = GameTimerManager.Instance;
-
+    private void Awake()
+    {
+        DontDestroyOnLoad(this.gameObject);
+        Game.Scene.AddComponent<NetOuterComponent>();
+        Game.Scene.AddComponent<OpcodeTypeComponent>();
+        Game.Scene.AddComponent<MessageDispatherComponent>();
+    }
     void Start()
     {
         Init();
-        DontDestroyOnLoad(this.gameObject);
     }
 
     async void Init()
