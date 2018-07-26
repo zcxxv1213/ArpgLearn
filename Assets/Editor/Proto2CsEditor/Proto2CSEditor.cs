@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace ETEditor
 {
-	class OpcodeInfo
+	internal class OpcodeInfo
 	{
 		public string Name;
 		public int Opcode;
@@ -16,7 +16,7 @@ namespace ETEditor
 	
 	public class Proto2CSEditor : EditorWindow
 	{
-		private const string protoPath = "../Proto/";
+		private const string protoPath = "Assets/Proto/";
 		private const string clientMessagePath = "Assets/Scripts/Module/Message/";
 		private const string hotfixMessagePath = "Hotfix/Module/Message/";
 		private static readonly char[] splitChars = { ' ', '\t' };
@@ -25,13 +25,23 @@ namespace ETEditor
 		[MenuItem("Tools/Proto2CS")]
 		public static void AllProto2CS()
 		{
+			// InnerMessage.proto生成cs代码
+			//InnerProto2CS.Proto2CS();
+			
 			msgOpcode.Clear();
 			Proto2CS("ETModel", "OuterMessage.proto", clientMessagePath, "OuterOpcode", 100);
 			
+		//	msgOpcode.Clear();
+		//	Proto2CS("ETModel", "FrameMessage.proto", "Assets/Scripts/Module/FrameSync/", "FrameOpcode", 10);
 
-			msgOpcode.Clear();
-			Proto2CS("ETHotfix", "HotfixMessage.proto", hotfixMessagePath, "HotfixOpcode", 10000);
+		//	msgOpcode.Clear();
+		//	Proto2CS("ETHotfix", "HotfixMessage.proto", hotfixMessagePath, "HotfixOpcode", 10000);
 
+#if !UNITY_EDITOR_OSX
+			CommandRun($"protoc.bat", "");
+#else
+			"bash ./protoc.sh".Bash(System.Environment.CurrentDirectory);
+#endif
 			AssetDatabase.Refresh();
 		}
 
@@ -41,12 +51,13 @@ namespace ETEditor
 			{
 				ProcessStartInfo info = new ProcessStartInfo
 				{
+					CreateNoWindow = true,
 					FileName = exe, 
 					Arguments = arguments, 
 					UseShellExecute = true,
-					WorkingDirectory = "."
 				};
-				Process.Start(info);
+				Process p = Process.Start(info);
+				p.WaitForExit();
 			}
 			catch (Exception e)
 			{
@@ -57,13 +68,14 @@ namespace ETEditor
 		public static void Proto2CS(string ns, string protoName, string outputPath, string opcodeClassName, int startOpcode, bool isClient = true)
 		{
 			msgOpcode.Clear();
+            
 			string proto = Path.Combine(protoPath, protoName);
-			
-			CommandRun($"protoc.exe", $"--csharp_out=\"{outputPath}\" --proto_path=\"{protoPath}\" {protoName}");
+            Log.Debug(proto);
+            //CommandRun($"protoc.exe", $"--csharp_out=\"./{outputPath}\" --proto_path=\"{protoPath}\" {protoName}");
 
-			string s = File.ReadAllText(proto);
-
-			StringBuilder sb = new StringBuilder();
+            string s = File.ReadAllText(proto);
+            Log.Debug(s);
+            StringBuilder sb = new StringBuilder();
 			sb.Append("using ETModel;\n");
 			sb.Append($"namespace {ns}\n");
 			sb.Append("{\n");
@@ -136,7 +148,8 @@ namespace ETEditor
 			sb.AppendLine("}");
 			
 			string csPath = Path.Combine(outputPath, outputFileName + ".cs");
-			File.WriteAllText(csPath, sb.ToString());
+            Log.Debug(csPath);
+            File.WriteAllText(csPath, sb.ToString());
 		}
 	}
 }

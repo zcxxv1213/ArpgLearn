@@ -9,6 +9,7 @@ using Assets.Scripts.Com.Game.Manager;
 using static Com.Game.Manager.SyncResourceManager;
 using Assets.Scripts.Com.Manager;
 using ETModel;
+using System.Net;
 
 public class Main : MonoBehaviour
 {
@@ -21,6 +22,15 @@ public class Main : MonoBehaviour
         Game.Scene.AddComponent<NetOuterComponent>();
         Game.Scene.AddComponent<OpcodeTypeComponent>();
         Game.Scene.AddComponent<MessageDispatherComponent>();
+        this.CreatConnect();
+
+    }
+    void CreatConnect()
+    {
+        IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 20000);
+        Session session = Game.Scene.GetComponent<NetOuterComponent>().Create(iPEndPoint);
+
+
     }
     void Start()
     {
