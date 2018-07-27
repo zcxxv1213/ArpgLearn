@@ -82,6 +82,7 @@ namespace ETModel
 		{
 			if (!this.isConnected)
 			{
+                Log.Debug("Connect");
 				this.ConnectAsync(this.RemoteAddress);
 				return;
 			}
@@ -99,7 +100,7 @@ namespace ETModel
 			byte[] sizeBuffer = BitConverter.GetBytes(length);
 			this.sendBuffer.Write(sizeBuffer, 0, sizeBuffer.Length);
 			this.sendBuffer.Write(buffer, index, length);
-
+            Log.Debug("SSend");
 			if(!this.isSending)
 			{
 				this.StartSend();
@@ -150,8 +151,10 @@ namespace ETModel
 			this.outArgs.RemoteEndPoint = ipEndPoint;
 			if (this.socket.ConnectAsync(this.outArgs))
 			{
+                Log.Debug("asdasda");
 				return;
 			}
+            Log.Debug("Complete");
 			OnConnectComplete(this.outArgs);
 		}
 
@@ -159,10 +162,11 @@ namespace ETModel
 		{
 			if (this.socket == null)
 			{
+                Log.Debug("socket == null");
 				return;
 			}
 			SocketAsyncEventArgs e = (SocketAsyncEventArgs) o;
-			
+            Log.Debug(e.SocketError.ToString());
 			if (e.SocketError != SocketError.Success)
 			{
 				this.OnError((int)e.SocketError);	
@@ -264,6 +268,7 @@ namespace ETModel
 		{
 			if(!this.isConnected)
 			{
+                Log.Debug("NotConnect");
 				return;
 			}
 
