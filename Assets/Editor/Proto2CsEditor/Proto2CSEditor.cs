@@ -18,7 +18,7 @@ namespace ETEditor
 	{
 		private const string protoPath = "Assets/Proto/";
 		private const string clientMessagePath = "Assets/Scripts/Module/Message/";
-		private const string hotfixMessagePath = "Hotfix/Module/Message/";
+		private const string hotfixMessagePath = "Assets/Scripts/Module/Message/Hotfix";
 		private static readonly char[] splitChars = { ' ', '\t' };
 		private static readonly List<OpcodeInfo> msgOpcode = new List<OpcodeInfo>();
 		
@@ -30,23 +30,26 @@ namespace ETEditor
 			
 			msgOpcode.Clear();
 			Proto2CS("ETModel", "OuterMessage.proto", clientMessagePath, "OuterOpcode", 100);
-			
-		//	msgOpcode.Clear();
-		//	Proto2CS("ETModel", "FrameMessage.proto", "Assets/Scripts/Module/FrameSync/", "FrameOpcode", 10);
 
-		//	msgOpcode.Clear();
-		//	Proto2CS("ETHotfix", "HotfixMessage.proto", hotfixMessagePath, "HotfixOpcode", 10000);
+            //	msgOpcode.Clear();
+            //	Proto2CS("ETModel", "FrameMessage.proto", "Assets/Scripts/Module/FrameSync/", "FrameOpcode", 10);
+
+            msgOpcode.Clear();
+           // Proto2CS("ETHotfix", "HotfixMessage.proto", hotfixMessagePath, "HotfixOpcode", 10000);
 
 #if !UNITY_EDITOR_OSX
-			CommandRun($"protoc.bat", "");
+            Log.Debug("1");
+            CommandRun($"protoc.bat", "");
 #else
+             Log.Debug("0");
 			"bash ./protoc.sh".Bash(System.Environment.CurrentDirectory);
 #endif
-			AssetDatabase.Refresh();
+            AssetDatabase.Refresh();
 		}
 
 		public static void CommandRun(string exe, string arguments)
 		{
+            Log.Debug(exe);
 			try
 			{
 				ProcessStartInfo info = new ProcessStartInfo
@@ -71,7 +74,7 @@ namespace ETEditor
             
 			string proto = Path.Combine(protoPath, protoName);
             Log.Debug(proto);
-            //CommandRun($"protoc.exe", $"--csharp_out=\"./{outputPath}\" --proto_path=\"{protoPath}\" {protoName}");
+           // CommandRun($"protoc.exe", $"--csharp_out=\"./{outputPath}\" --proto_path=\"{protoPath}\" {protoName}");
 
             string s = File.ReadAllText(proto);
             Log.Debug(s);

@@ -29,7 +29,7 @@ public class Main : MonoBehaviour
     {
         IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 20000);
         Session session = Game.Scene.GetComponent<NetOuterComponent>().Create(iPEndPoint);
-
+        
 
     }
     void Start()
