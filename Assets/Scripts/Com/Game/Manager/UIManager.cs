@@ -239,7 +239,7 @@ namespace Assets.Scripts.Com.Game.Manager
             mGlobalLayerList.Add(mLoadingLayer);
             mGlobalLayerList.Add(mSceneLoadingLayer);
             mGlobalLayerList.Add(mInteractiveLayer);
-
+            mInteractiveLayer.SetActive(false);
             mUICamera = mTransform.Find("UICamera").GetComponent<Camera>();
             this.AddListener();
         }

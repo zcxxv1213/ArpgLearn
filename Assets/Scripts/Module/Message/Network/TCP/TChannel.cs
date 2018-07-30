@@ -151,7 +151,7 @@ namespace ETModel
 			this.outArgs.RemoteEndPoint = ipEndPoint;
 			if (this.socket.ConnectAsync(this.outArgs))
 			{
-                Log.Debug("asdasda");
+                Log.Debug("StartConnect");
 				return;
 			}
             Log.Debug("Complete");

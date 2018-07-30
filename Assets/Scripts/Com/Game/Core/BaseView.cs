@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Assets.Scripts.Com.Game.Manager;
 using Assets.Scripts.Com.Game.Utils;
 using Com.Game.Utils.Timers;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Com.Game.Core
 {
@@ -124,6 +125,54 @@ namespace Assets.Scripts.Com.Game.Core
         protected virtual void OnBeforeLoadView()
         {
 
+        }
+        public void FindAndAddClickListener(string name, Action action, string soundName = null, int intervalTime = 0)
+        {
+            this.AddBtnClickListener(this.Find(name), action, soundName, intervalTime);
+        }
+        public void AddBtnClickListener(Transform btnObj,Action action,string soundName,int intervalTime)
+        {
+            Button btn = btnObj.GetComponent<Button>();
+            if (soundName == null || intervalTime == 0)
+            {
+                int time = 0;
+                btn.onClick.AddListener(() =>
+               {
+                   if (soundName != null)
+                   {
+                        //TODO PLAYSOUND
+                    }
+                   if (intervalTime != 0)
+                   {
+                       if (Time.realtimeSinceStartup - time >= intervalTime)
+                       {
+                           action();
+                       }
+                   }
+                   else
+                   {
+                       Debug.Log("Action");
+                       action();
+                   }
+               }
+                );
+            }
+            else
+            {
+                btn.onClick.AddListener(() =>
+                {
+                    action();
+                });
+            }
+        }
+        public Transform Find(string name)
+        {
+            Transform mTrans =  this.transform.Find(name);
+            if (mTrans == null)
+            {
+                Debug.LogError("Can't find : " + name);
+            }
+            return mTrans;
         }
 
         private bool ShowUILoading(bool isShow)
