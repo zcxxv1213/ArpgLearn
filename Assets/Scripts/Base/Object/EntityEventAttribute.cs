@@ -3,7 +3,7 @@
 namespace ETModel
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class EntityEventAttribute: Attribute
+	public class EntityEventAttribute: BaseAttribute
 	{
 		public int ClassType;
 
