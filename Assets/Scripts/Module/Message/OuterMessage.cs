@@ -1240,6 +1240,179 @@ namespace ETModel {
 
   }
 
+  public partial class C2G_LoginGate : pb::IMessage {
+    private static readonly pb::MessageParser<C2G_LoginGate> _parser = new pb::MessageParser<C2G_LoginGate>(() => new C2G_LoginGate());
+    public static pb::MessageParser<C2G_LoginGate> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private long key_;
+    /// <summary>
+    /// 帐号
+    /// </summary>
+    public long Key {
+      get { return key_; }
+      set {
+        key_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Key != 0L) {
+        output.WriteRawTag(8);
+        output.WriteInt64(Key);
+      }
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (Key != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Key);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      key_ = 0;
+      rpcId_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            Key = input.ReadInt64();
+            break;
+          }
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class G2C_LoginGate : pb::IMessage {
+    private static readonly pb::MessageParser<G2C_LoginGate> _parser = new pb::MessageParser<G2C_LoginGate>(() => new G2C_LoginGate());
+    public static pb::MessageParser<G2C_LoginGate> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private int error_;
+    public int Error {
+      get { return error_; }
+      set {
+        error_ = value;
+      }
+    }
+
+    private string message_ = "";
+    public string Message {
+      get { return message_; }
+      set {
+        message_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    private long playerId_;
+    public long PlayerId {
+      get { return playerId_; }
+      set {
+        playerId_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (PlayerId != 0L) {
+        output.WriteRawTag(8);
+        output.WriteInt64(PlayerId);
+      }
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+      if (Message.Length != 0) {
+        output.WriteRawTag(226, 5);
+        output.WriteString(Message);
+      }
+      if (Error != 0) {
+        output.WriteRawTag(128, 6);
+        output.WriteInt32(Error);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (Error != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Error);
+      }
+      if (Message.Length != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(Message);
+      }
+      if (PlayerId != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(PlayerId);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      playerId_ = 0;
+      rpcId_ = 0;
+      message_ = "";
+      error_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            PlayerId = input.ReadInt64();
+            break;
+          }
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+          case 738: {
+            Message = input.ReadString();
+            break;
+          }
+          case 768: {
+            Error = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public partial class G2C_Test : pb::IMessage {
     private static readonly pb::MessageParser<G2C_Test> _parser = new pb::MessageParser<G2C_Test>(() => new G2C_Test());
     public static pb::MessageParser<G2C_Test> Parser { get { return _parser; } }

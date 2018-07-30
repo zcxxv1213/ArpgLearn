@@ -10,7 +10,6 @@ public class GameLooper : MonoBehaviour {
 
     private void Awake()
     {
-        SynchronizationContext.SetSynchronizationContext(OneThreadSynchronizationContext.Instance);
         DontDestroyOnLoad(gameObject);
         Game.Scene.AddComponent<PlayerComponent>();
         Game.Scene.AddComponent<UnitComponent>();

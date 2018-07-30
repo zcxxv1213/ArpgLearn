@@ -4,6 +4,7 @@ using Com.Game.Manager;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using static Com.Game.Manager.SyncResourceManager;
@@ -43,6 +44,7 @@ namespace Com.Game.Manager
         }
         static async Task LoadBundleManifest(WWW bundle, bool ifExternal)
         {
+            Debug.Log(SynchronizationContext.Current.ToString());
             await new WaitUntil(() => bundle.isDone);
             AssetBundle mBundle = bundle.assetBundle;
             if (ifExternal)

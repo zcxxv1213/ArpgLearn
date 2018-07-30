@@ -43,6 +43,12 @@ namespace ETModel
 	[Message(OuterOpcode.R2C_Login)]
 	public partial class R2C_Login : IResponse {}
 
+	[Message(OuterOpcode.C2G_LoginGate)]
+	public partial class C2G_LoginGate : IRequest {}
+
+	[Message(OuterOpcode.G2C_LoginGate)]
+	public partial class G2C_LoginGate : IResponse {}
+
 	[Message(OuterOpcode.G2C_Test)]
 	public partial class G2C_Test : IMessage {}
 
@@ -65,6 +71,8 @@ namespace ETModel
 		 public const ushort R2C_Ping = 112;
 		 public const ushort C2R_Login = 113;
 		 public const ushort R2C_Login = 114;
-		 public const ushort G2C_Test = 115;
+		 public const ushort C2G_LoginGate = 115;
+		 public const ushort G2C_LoginGate = 116;
+		 public const ushort G2C_Test = 117;
 	}
 }
