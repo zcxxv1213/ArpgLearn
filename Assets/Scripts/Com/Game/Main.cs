@@ -34,14 +34,14 @@ public class Main : MonoBehaviour
         this.CreatConnect();
         SynchronizationContext.SetSynchronizationContext(unityContext);
     }
-    void CreatConnect()
+    async void CreatConnect()
     {
         IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 10002);
         Session session = Game.Scene.GetComponent<NetOuterComponent>().Create(iPEndPoint);
         Game.Scene.AddComponent<SessionComponent>().Session = session;
     //    Debug.Log("Send");
-    //    R2C_Ping r2C_Ping = (R2C_Ping)await session.Call(new C2R_Ping() { });
-    //    Debug.Log(r2C_Ping.Message);
+        R2C_Ping r2C_Ping = (R2C_Ping)await session.Call(new C2R_Ping() { });
+        Debug.Log(r2C_Ping.Message);
     }
     void Start()
     {

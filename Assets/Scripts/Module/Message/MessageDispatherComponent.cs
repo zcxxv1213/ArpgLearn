@@ -38,7 +38,7 @@ namespace ETModel
 			this.handlers.Clear();
 
 			List<Type> types = Game.EventSystem.GetTypes((typeof(MessageHandlerAttribute)));
-
+            Log.Debug("AddCode");
 			foreach (Type type in types)
 			{
 				object[] attrs = type.GetCustomAttributes(typeof(MessageHandlerAttribute), false);
@@ -61,6 +61,7 @@ namespace ETModel
 					Log.Error($"消息opcode为0: {messageType.Name}");
 					continue;
 				}
+                Log.Debug("RegistEventCode" + opcode);
 				this.RegisterHandler(opcode, iMHandler);
 			}
 		}
@@ -77,6 +78,7 @@ namespace ETModel
 		public void Handle(Session session, MessageInfo messageInfo)
 		{
 			List<IMHandler> actions;
+            Log.Info(messageInfo.Opcode.ToString());
 			if (!this.handlers.TryGetValue(messageInfo.Opcode, out actions))
 			{
                 //Log.Error($"消息没有处理: {messageInfo.Opcode} {JsonHelper.ToJson(messageInfo.Message)}");

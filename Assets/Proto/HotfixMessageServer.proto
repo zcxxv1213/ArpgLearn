@@ -1,5 +1,5 @@
 syntax = "proto3";
-package ETModel;
+package ETHotfix;
 
 message C2R_Login // IRequest
 {

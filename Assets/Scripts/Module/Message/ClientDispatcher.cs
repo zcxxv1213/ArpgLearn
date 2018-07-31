@@ -9,11 +9,11 @@ namespace ETModel
 			object message;
 			try
 			{
-				if (OpcodeHelper.IsClientHotfixMessage(packet.Opcode))
+				/*if (OpcodeHelper.IsClientHotfixMessage(packet.Opcode))
 				{
 					session.GetComponent<SessionCallbackComponent>().MessageCallback.Invoke(session, packet);
 					return;
-				}
+				}*/
 
 				OpcodeTypeComponent opcodeTypeComponent = session.Network.Entity.GetComponent<OpcodeTypeComponent>();
 				object instance = opcodeTypeComponent.GetInstance(packet.Opcode);
