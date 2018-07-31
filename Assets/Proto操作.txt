@@ -1,0 +1,1 @@
+Tools/Proto2CS ->Module/Message ->copy OuterMessage && OuterOpcode && HotfixMessage && HotfixOpcode ->paste to Server directories 
