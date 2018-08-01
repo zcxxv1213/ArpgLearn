@@ -29,5 +29,10 @@ namespace Assets.Scripts.Com.Game.Module.Scene
 
                });
         }
+        public override void BeforeExitScene()
+        {
+            base.BeforeExitScene();
+            Debug.Log("EXITLOGINSCENE");
+        }
     }
 }

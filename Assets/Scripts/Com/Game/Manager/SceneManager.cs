@@ -116,7 +116,7 @@ namespace Assets.Scripts.Com.Manager
                 }
 
                 mPrevScene = mCurScene;
-                mPrevScene.BeforeExitScene();
+               // mPrevScene.BeforeExitScene();
 
                 GameTimerManager.Instance.ClearOnChangeScene();
             //    MsgManager.ClearAction();
@@ -129,7 +129,7 @@ namespace Assets.Scripts.Com.Manager
                     mCurScene = new LoginScene(0);//TODO LoginScene;
                     break;
                 case mMainSceneID:
-                    mCurScene = new BaseScene(1);//TODO MainScene;
+                    mCurScene = new MainScene(1);//TODO MainScene;
                     break;
                 default:
                     break;
