@@ -31,6 +31,11 @@ message G2C_LoginGate // IResponse
 	int64 PlayerId = 1;
 }
 
+message C2G_SendMsg // IMessage
+{
+	string Info = 1;
+}
+
 message G2C_TestHotfixMessage // IMessage
 {
 	string Info = 1;

@@ -18,9 +18,10 @@ namespace Assets.Scripts.Com.Game.Events
         OPEN_UI,
         SHOW_SCENE_LOADING,
         SHOW_REQUEST_LOADING,
+        SCENE_LOAD_COMPLETE,
         CLEAR_BASE_MODEL,
         OPEN_UI_WITH_PARAM,
-
+        TOGGLE_UI_WITH_PARAM,
 
 
         MAX_COUNT//Last

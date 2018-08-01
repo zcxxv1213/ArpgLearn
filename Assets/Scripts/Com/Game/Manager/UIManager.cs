@@ -247,7 +247,15 @@ namespace Assets.Scripts.Com.Game.Manager
         private void AddListener()
         {
             mEventDispatcher.AddEventListener<int, object>(EventConstant.OPEN_UI_WITH_PARAM, OnOpenUI);
+            mEventDispatcher.AddEventListener<int, ToggleUIType, object>(EventConstant.TOGGLE_UI_WITH_PARAM, OnToggleUI);
         }
+
+        public void PreloadUI(int viewEnum)
+        {
+            BaseView view =  GetRegisterView(viewEnum);
+            view.PreloadView();
+        }
+
         private void CreateInteractiveLayer()
         {
             Transform layer = this.AddCanvas(this.CreateLayer(mGlobalPanel.transform, "mInteractiveLayer").transform);

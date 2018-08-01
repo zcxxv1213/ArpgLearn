@@ -13,7 +13,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         public float defaultFov { get; protected set; }
         public Vector3 defaultOffset { get; protected set; }
 
-        protected static UIManager sUIManager = UIManager.Instance;
+        protected static UIManager mUIManager = UIManager.Instance;
 
         protected BackgroundType mBackgroundType = BackgroundType.BG_1;
 
@@ -53,7 +53,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         }
         public virtual void ChangePanelVisible()
         {
-            sUIManager.ChangePanelVisible(this.mSceneId);
+            mUIManager.ChangePanelVisible(this.mSceneId);
         }
 
         public virtual void BeforeEnterScene()

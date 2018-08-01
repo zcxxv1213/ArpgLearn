@@ -6,6 +6,7 @@ using Assets.Scripts.Com.Game.Events;
 using UnityEngine.UI;
 using ETModel;
 using System.Net;
+using Assets.Scripts.Com.Manager;
 
 namespace Assets.Scripts.Com.Game.Module.Login
 {
@@ -59,6 +60,10 @@ namespace Assets.Scripts.Com.Game.Module.Login
                 playerComponent.MyPlayer = player;
                 Debug.Log(player.Id);
                 Debug.Log(player.UnitId);
+                PreloadManager.Instance.OnLoginEnterMainScenePreload(() =>
+                {
+                    SceneManager.Instance.EnterSceneById(1);
+                });
             }
         }
 
