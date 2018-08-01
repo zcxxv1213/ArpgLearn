@@ -1,1 +1,1 @@
-Tools/Proto2CS ->Module/Message ->copy OuterMessage && OuterOpcode && HotfixMessage && HotfixOpcode ->paste to Server directories 
+Tools/Proto2CS ->Module/Message ->copy OuterMessage && OuterOpcode && HotfixMessageServer && HotfixOpcodeServer ->paste to Server directories ->Delete HotfixMessageServer  && HotfixOpcodeServer 
