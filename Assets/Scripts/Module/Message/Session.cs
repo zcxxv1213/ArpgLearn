@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -126,17 +127,17 @@ namespace ETModel
 		{
 			byte flag = packet.Flag;
 			ushort opcode = packet.Opcode;
-			
+            Debug.Log(SynchronizationContext.Current);
 #if !SERVER
-			/*if (OpcodeHelper.IsClientHotfixMessage(opcode))
+            /*if (OpcodeHelper.IsClientHotfixMessage(opcode))
 			{
 				this.Network.MessageDispatcher.Dispatch(this, packet);
 				return;
 			}*/
 #endif
 
-			// flag第一位为1表示这是rpc返回消息,否则交由MessageDispatcher分发
-			if ((flag & 0x01) == 0)
+            // flag第一位为1表示这是rpc返回消息,否则交由MessageDispatcher分发
+            if ((flag & 0x01) == 0)
 			{
 				this.Network.MessageDispatcher.Dispatch(this, packet);
 				return;

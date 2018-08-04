@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -37,7 +39,7 @@ namespace ETModel
 
 			this.isConnected = false;
 			this.isSending = false;
-		}
+        }
 		
 		public TChannel(Socket socket, TService service): base(service, ChannelType.Accept)
 		{
@@ -51,7 +53,7 @@ namespace ETModel
 			
 			this.isConnected = true;
 			this.isSending = false;
-		}
+        }
 
 		public override void Dispose()
 		{
@@ -130,10 +132,10 @@ namespace ETModel
 			switch (e.LastOperation)
 			{
 				case SocketAsyncOperation.Connect:
-					OneThreadSynchronizationContext.Instance.Post(this.OnConnectComplete, e);
+                    OneThreadSynchronizationContext.Instance.Post(this.OnConnectComplete, e);
 					break;
 				case SocketAsyncOperation.Receive:
-					OneThreadSynchronizationContext.Instance.Post(this.OnRecvComplete, e);
+                    OneThreadSynchronizationContext.Instance.Post(this.OnRecvComplete, e);
 					break;
 				case SocketAsyncOperation.Send:
 					OneThreadSynchronizationContext.Instance.Post(this.OnSendComplete, e);

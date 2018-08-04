@@ -25,13 +25,16 @@ public class Main : MonoBehaviour
         Game.EventSystem.Add(DLLType.Model, typeof(Main).Assembly);
         DontDestroyOnLoad(this.gameObject);
         Game.Scene.AddComponent<NetOuterComponent>();
+        Game.Scene.AddComponent<ConfigComponent>();
         Game.Scene.AddComponent<OpcodeTypeComponent>();
         Game.Scene.AddComponent<MessageDispatherComponent>();
         GameObject gameLooepr = new GameObject();
         gameLooepr.name = "GameLooper";
         gameLooepr.AddComponent<GameLooper>();
         DontDestroyOnLoad(gameLooepr);
-        this.CreatConnect();
+        UnitConfig unitConfig = (UnitConfig)Game.Scene.GetComponent<ConfigComponent>().Get(typeof(UnitConfig), 1001);
+        Debug.Log(unitConfig.Desc);
+        // this.CreatConnect();
         SynchronizationContext.SetSynchronizationContext(unityContext);
     }
     async void CreatConnect()
@@ -41,7 +44,10 @@ public class Main : MonoBehaviour
         Game.Scene.AddComponent<SessionComponent>().Session = session;
     //    Debug.Log("Send");
         R2C_Ping r2C_Ping = (R2C_Ping)await session.Call(new C2R_Ping() { });
+        Debug.Log(SynchronizationContext.Current);
         Debug.Log(r2C_Ping.Message);
+        
+        
     }
     void Start()
     {
