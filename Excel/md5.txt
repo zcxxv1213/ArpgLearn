@@ -1,1 +1,1 @@
-{ "fileMD5" : { "UnitConfig.xlsx" : "0c3f2690c7593c74d7ff2693fe631df2" } }
+{ "fileMD5" : { "UnitConfig.xlsx" : "0c3f2690c7593c74d7ff2693fe631df2", "MapConfig.xlsx" : "c287228a2b679835ae8a25daaeffab55" } }
