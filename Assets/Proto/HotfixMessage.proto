@@ -1,6 +1,13 @@
 syntax = "proto3";
 package ETModel;
 
+message Player_Info_Base //IMessage
+{
+	int32 RpcId = 90;
+	int64 PlayerId = 91;
+	string NickName = 92;
+}
+
 message C2R_Login // IRequest
 {
 	int32 RpcId = 90;
@@ -28,6 +35,7 @@ message G2C_LoginGate // IResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	Player_Info_Base BaseInfo = 93;
 	int64 PlayerId = 1;
 }
 

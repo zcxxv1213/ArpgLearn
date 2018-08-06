@@ -543,6 +543,14 @@ namespace ETModel {
       }
     }
 
+    private static readonly pb::FieldCodec<global::ETModel.ActorVo> _repeated_actorVOs_codec
+        = pb::FieldCodec.ForMessage(26, global::ETModel.ActorVo.Parser);
+    private pbc::RepeatedField<global::ETModel.ActorVo> actorVOs_ = new pbc::RepeatedField<global::ETModel.ActorVo>();
+    public pbc::RepeatedField<global::ETModel.ActorVo> ActorVOs {
+      get { return actorVOs_; }
+      set { actorVOs_ = value; }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (UnitId != 0L) {
         output.WriteRawTag(8);
@@ -552,6 +560,7 @@ namespace ETModel {
         output.WriteRawTag(16);
         output.WriteInt32(Count);
       }
+      actorVOs_.WriteTo(output, _repeated_actorVOs_codec);
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
         output.WriteInt32(RpcId);
@@ -583,12 +592,14 @@ namespace ETModel {
       if (Count != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Count);
       }
+      size += actorVOs_.CalculateSize(_repeated_actorVOs_codec);
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
       unitId_ = 0;
       count_ = 0;
+      actorVOs_.Clear();
       rpcId_ = 0;
       error_ = 0;
       message_ = "";
@@ -606,6 +617,10 @@ namespace ETModel {
             Count = input.ReadInt32();
             break;
           }
+          case 26: {
+            actorVOs_.AddEntriesFrom(input, _repeated_actorVOs_codec);
+            break;
+          }
           case 720: {
             RpcId = input.ReadInt32();
             break;
@@ -616,6 +631,91 @@ namespace ETModel {
           }
           case 738: {
             Message = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class ActorVo : pb::IMessage {
+    private static readonly pb::MessageParser<ActorVo> _parser = new pb::MessageParser<ActorVo>(() => new ActorVo());
+    public static pb::MessageParser<ActorVo> Parser { get { return _parser; } }
+
+    private long playerId_;
+    public long PlayerId {
+      get { return playerId_; }
+      set {
+        playerId_ = value;
+      }
+    }
+
+    private string nickName_ = "";
+    public string NickName {
+      get { return nickName_; }
+      set {
+        nickName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    private int team_;
+    public int Team {
+      get { return team_; }
+      set {
+        team_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (PlayerId != 0L) {
+        output.WriteRawTag(8);
+        output.WriteInt64(PlayerId);
+      }
+      if (NickName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(NickName);
+      }
+      if (Team != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Team);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (PlayerId != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(PlayerId);
+      }
+      if (NickName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(NickName);
+      }
+      if (Team != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Team);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      playerId_ = 0;
+      nickName_ = "";
+      team_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            PlayerId = input.ReadInt64();
+            break;
+          }
+          case 18: {
+            NickName = input.ReadString();
+            break;
+          }
+          case 24: {
+            Team = input.ReadInt32();
             break;
           }
         }

@@ -1,7 +1,10 @@
 ManifestFileVersion: 0
-CRC: 3461529010
+CRC: 3948975677
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
       Name: model/cube
+      Dependencies: {}
+    Info_1:
+      Name: scenes/100001
       Dependencies: {}

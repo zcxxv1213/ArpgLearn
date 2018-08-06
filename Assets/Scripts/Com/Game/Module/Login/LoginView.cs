@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using ETModel;
 using System.Net;
 using Assets.Scripts.Com.Manager;
+using Assets.Scripts.Com.Game.Module.Role;
 
 namespace Assets.Scripts.Com.Game.Module.Login
 {
@@ -60,6 +61,7 @@ namespace Assets.Scripts.Com.Game.Module.Login
                 playerComponent.MyPlayer = player;
                 Debug.Log(player.Id);
                 Debug.Log(player.UnitId);
+                RoleModel.Instance.OnRevInfo(g2CLoginGate.BaseInfo);
                 PreloadManager.Instance.OnLoginEnterMainScenePreload(() =>
                 {
                     SceneManager.Instance.EnterSceneById(1);

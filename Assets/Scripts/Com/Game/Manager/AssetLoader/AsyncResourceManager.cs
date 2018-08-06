@@ -25,7 +25,7 @@ namespace Com.Game.Manager
         {
             await LoadManifest(ResourceURL.GetUrl("StreamingAssets"));
             //TODO ADD ART WORK SPACE
-           // await LoadExternaManifest(ResourceURL.GetExternalUrl("StreamingAssets"));
+            await LoadExternaManifest(ResourceURL.GetExternalUrl("StreamingAssets"));
             return;
         }
 

@@ -49,6 +49,14 @@ message G2C_EnterMap // IResponse
 	string Message = 92;
 	int64 UnitId = 1;
 	int32 Count  = 2;
+	repeated ActorVo ActorVOs = 3;
+}
+
+message ActorVo
+{
+	int64 PlayerId = 1;
+	string NickName = 2;
+	int32 Team = 3;
 }
 
 message UnitInfo

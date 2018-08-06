@@ -131,6 +131,9 @@ namespace Assets.Scripts.Com.Manager
                 case mMainSceneID:
                     mCurScene = new MainScene(1);//TODO MainScene;
                     break;
+                case 10001:
+                    mCurScene = new PvpScene(sceneId);//TODO MainScene;
+                    break;
                 default:
                     break;
             }

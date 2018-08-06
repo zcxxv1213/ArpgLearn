@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using ETModel;
+using Assets.Scripts.Com.Manager;
 
 namespace Assets.Scripts.Com.Game.Module.MainInterface
 {
@@ -41,7 +42,10 @@ namespace Assets.Scripts.Com.Game.Module.MainInterface
             {
                 Debug.LogError("Error:" + g2C_EnterMap.Error);
             }
+            MapConfig mapConfig = (MapConfig)ETModel.Game.Scene.GetComponent<ConfigComponent>().Get(typeof(MapConfig), 10001);
+            ETModel.Game.Scene.AddComponent<BattleDataComponent>().InitActors(g2C_EnterMap.ActorVOs.array);
             Debug.Log(g2C_EnterMap.UnitId);
+            SceneManager.Instance.EnterSceneById((int)mapConfig.Id);
             //LoadScene - > Send LoadComplete -> Enter
         }
     }

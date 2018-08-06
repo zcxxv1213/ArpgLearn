@@ -1,46 +1,46 @@
 using ETModel;
-namespace ETModel
+namespace ETHotfix
 {
-	[Message(HotfixOpcode.Player_Info_Base)]
+	[Message(HotfixOpcodeServer.Player_Info_Base)]
 	public partial class Player_Info_Base : IMessage {}
 
-	[Message(HotfixOpcode.C2R_Login)]
+	[Message(HotfixOpcodeServer.C2R_Login)]
 	public partial class C2R_Login : IRequest {}
 
-	[Message(HotfixOpcode.R2C_Login)]
+	[Message(HotfixOpcodeServer.R2C_Login)]
 	public partial class R2C_Login : IResponse {}
 
-	[Message(HotfixOpcode.C2G_LoginGate)]
+	[Message(HotfixOpcodeServer.C2G_LoginGate)]
 	public partial class C2G_LoginGate : IRequest {}
 
-	[Message(HotfixOpcode.G2C_LoginGate)]
+	[Message(HotfixOpcodeServer.G2C_LoginGate)]
 	public partial class G2C_LoginGate : IResponse {}
 
-	[Message(HotfixOpcode.C2G_SendMsg)]
+	[Message(HotfixOpcodeServer.C2G_SendMsg)]
 	public partial class C2G_SendMsg : IMessage {}
 
-	[Message(HotfixOpcode.G2C_TestHotfixMessage)]
+	[Message(HotfixOpcodeServer.G2C_TestHotfixMessage)]
 	public partial class G2C_TestHotfixMessage : IMessage {}
 
-	[Message(HotfixOpcode.C2M_TestActorRequest)]
+	[Message(HotfixOpcodeServer.C2M_TestActorRequest)]
 	public partial class C2M_TestActorRequest : IActorRequest {}
 
-	[Message(HotfixOpcode.M2C_TestActorResponse)]
+	[Message(HotfixOpcodeServer.M2C_TestActorResponse)]
 	public partial class M2C_TestActorResponse : IActorResponse {}
 
-	[Message(HotfixOpcode.PlayerInfo)]
+	[Message(HotfixOpcodeServer.PlayerInfo)]
 	public partial class PlayerInfo : IMessage {}
 
-	[Message(HotfixOpcode.C2G_PlayerInfo)]
+	[Message(HotfixOpcodeServer.C2G_PlayerInfo)]
 	public partial class C2G_PlayerInfo : IRequest {}
 
-	[Message(HotfixOpcode.G2C_PlayerInfo)]
+	[Message(HotfixOpcodeServer.G2C_PlayerInfo)]
 	public partial class G2C_PlayerInfo : IResponse {}
 
 }
-namespace ETModel
+namespace ETHotfix
 {
-	public static partial class HotfixOpcode
+	public static partial class HotfixOpcodeServer
 	{
 		 public const ushort Player_Info_Base = 10001;
 		 public const ushort C2R_Login = 10002;
