@@ -1,7 +1,0 @@
-ManifestFileVersion: 0
-CRC: 3461529010
-AssetBundleManifest:
-  AssetBundleInfos:
-    Info_0:
-      Name: model/cube
-      Dependencies: {}
