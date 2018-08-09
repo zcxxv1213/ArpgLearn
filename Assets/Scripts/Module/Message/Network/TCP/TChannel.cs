@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using UnityEngine;
 
 namespace ETModel
 {
@@ -29,6 +27,8 @@ namespace ETModel
 
 		public TChannel(IPEndPoint ipEndPoint, TService service): base(service, ChannelType.Connect)
 		{
+			this.InstanceId = IdGenerater.GenerateId();
+			
 			this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			this.socket.NoDelay = true;
 			this.parser = new PacketParser(this.recvBuffer);
@@ -39,10 +39,12 @@ namespace ETModel
 
 			this.isConnected = false;
 			this.isSending = false;
-        }
+		}
 		
 		public TChannel(Socket socket, TService service): base(service, ChannelType.Accept)
 		{
+			this.InstanceId = IdGenerater.GenerateId();
+			
 			this.socket = socket;
 			this.socket.NoDelay = true;
 			this.parser = new PacketParser(this.recvBuffer);
@@ -53,7 +55,7 @@ namespace ETModel
 			
 			this.isConnected = true;
 			this.isSending = false;
-        }
+		}
 
 		public override void Dispose()
 		{
@@ -84,7 +86,6 @@ namespace ETModel
 		{
 			if (!this.isConnected)
 			{
-                Log.Debug("Connect");
 				this.ConnectAsync(this.RemoteAddress);
 				return;
 			}
@@ -99,10 +100,8 @@ namespace ETModel
 			{
 				throw new Exception("TChannel已经被Dispose, 不能发送消息");
 			}
-			byte[] sizeBuffer = BitConverter.GetBytes(length);
-			this.sendBuffer.Write(sizeBuffer, 0, sizeBuffer.Length);
 			this.sendBuffer.Write(buffer, index, length);
-            Log.Debug("SSend");
+
 			if(!this.isSending)
 			{
 				this.StartSend();
@@ -116,9 +115,6 @@ namespace ETModel
 				throw new Exception("TChannel已经被Dispose, 不能发送消息");
 			}
 
-			ushort size = (ushort)(stream.Length - stream.Position);
-			byte[] sizeBuffer = BitConverter.GetBytes(size);
-			this.sendBuffer.Write(sizeBuffer, 0, sizeBuffer.Length);
 			this.sendBuffer.ReadFrom(stream);
 
 			if(!this.isSending)
@@ -132,10 +128,10 @@ namespace ETModel
 			switch (e.LastOperation)
 			{
 				case SocketAsyncOperation.Connect:
-                    OneThreadSynchronizationContext.Instance.Post(this.OnConnectComplete, e);
+					OneThreadSynchronizationContext.Instance.Post(this.OnConnectComplete, e);
 					break;
 				case SocketAsyncOperation.Receive:
-                    OneThreadSynchronizationContext.Instance.Post(this.OnRecvComplete, e);
+					OneThreadSynchronizationContext.Instance.Post(this.OnRecvComplete, e);
 					break;
 				case SocketAsyncOperation.Send:
 					OneThreadSynchronizationContext.Instance.Post(this.OnSendComplete, e);
@@ -153,10 +149,8 @@ namespace ETModel
 			this.outArgs.RemoteEndPoint = ipEndPoint;
 			if (this.socket.ConnectAsync(this.outArgs))
 			{
-                Log.Debug("StartConnect");
 				return;
 			}
-            Log.Debug("Complete");
 			OnConnectComplete(this.outArgs);
 		}
 
@@ -164,11 +158,10 @@ namespace ETModel
 		{
 			if (this.socket == null)
 			{
-                Log.Debug("socket == null");
 				return;
 			}
 			SocketAsyncEventArgs e = (SocketAsyncEventArgs) o;
-            Log.Debug(e.SocketError.ToString());
+			
 			if (e.SocketError != SocketError.Success)
 			{
 				this.OnError((int)e.SocketError);	
@@ -270,7 +263,6 @@ namespace ETModel
 		{
 			if(!this.isConnected)
 			{
-                Log.Debug("NotConnect");
 				return;
 			}
 

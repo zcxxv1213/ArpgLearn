@@ -17,7 +17,7 @@
 			self.Update();
 		}
 	}
-
+    //选择使用KCP或者TCP的地方
 	public class NetOuterComponent : NetworkComponent
 	{
 		public void Awake()

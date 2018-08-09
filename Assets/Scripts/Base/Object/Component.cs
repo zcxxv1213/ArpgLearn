@@ -6,7 +6,8 @@ namespace ETModel
 	[BsonIgnoreExtraElements]
 	public abstract class Component : Object, IDisposable, IComponentSerialize
 	{
-		[BsonIgnore]
+        // 只有Game.EventSystem.Add方法中会设置该值，如果new出来的对象不想加入Game.EventSystem中，则
+        [BsonIgnore]
 		public long InstanceId { get; protected set; }
 
 		[BsonIgnore]
@@ -28,12 +29,9 @@ namespace ETModel
 					return;
 				}
 
-				if (this.InstanceId == 0)
-				{
-					this.InstanceId = IdGenerater.GenerateId();
-				}
+                this.InstanceId = IdGenerater.GenerateId();
 
-				Game.EventSystem.Add(this);
+                Game.EventSystem.Add(this);
 			}
 		}
 
