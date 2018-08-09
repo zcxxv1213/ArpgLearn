@@ -31,7 +31,9 @@ namespace ETModel
 		public bool isRecvFirstKcpMessage;
 		private readonly IPEndPoint remoteEndPoint;
 
-		private uint lastRecvTime;
+		public uint lastRecvTime;
+		
+		public uint CreateTime;
 
 		public uint RemoteConn;
 
@@ -61,6 +63,7 @@ namespace ETModel
 			this.isConnected = true;
 			this.isRecvFirstKcpMessage = false;
 			this.lastRecvTime = kService.TimeNow;
+			this.CreateTime = kService.TimeNow;
 		}
 
 		// connect
@@ -73,6 +76,7 @@ namespace ETModel
 			this.remoteEndPoint = remoteEndPoint;
 			this.isRecvFirstKcpMessage = false;
 			this.lastRecvTime = kService.TimeNow;
+			this.CreateTime = kService.TimeNow;
 			this.Connect();
 		}
 
@@ -199,10 +203,13 @@ namespace ETModel
 			try
 			{
 				uint timeNow = this.GetService().TimeNow;
+				
+				this.lastRecvTime = timeNow;
+				
 				this.packet.Bytes.WriteTo(0, KcpProtocalType.SYN);
 				this.packet.Bytes.WriteTo(1, this.LocalConn);
 				this.socket.SendTo(this.packet.Bytes, 0, 5, SocketFlags.None, remoteEndPoint);
-
+				
 				// 200毫秒后再次update发送connect请求
 				this.GetService().AddToUpdateNextTime(timeNow + 200, this.Id);
 			}
@@ -242,14 +249,19 @@ namespace ETModel
 			}
 
 			uint timeNow = this.GetService().TimeNow;
-
+			
 			// 如果还没连接上，发送连接请求
 			if (!this.isConnected)
 			{
 				// 10秒没连接上则报错
-				if (timeNow - this.lastRecvTime > 10 * 1000)
+				if (timeNow - this.CreateTime > 10 * 1000)
 				{
 					this.OnError(ErrorCode.ERR_KcpCantConnect);
+					return;
+				}
+				
+				if (timeNow - this.lastRecvTime < 150)
+				{
 					return;
 				}
 				this.Connect();
@@ -275,7 +287,7 @@ namespace ETModel
 			}
 
 
-			if (kcp != IntPtr.Zero)
+			if (this.kcp != IntPtr.Zero)
 			{
 				uint nextUpdateTime = Kcp.KcpCheck(this.kcp, timeNow);
 				this.GetService().AddToUpdateNextTime(nextUpdateTime, this.Id);
@@ -309,12 +321,16 @@ namespace ETModel
 				this.GetService().RemoveFromWaitConnectChannels(this.RemoteConn);
 				this.isRecvFirstKcpMessage = true;
 			}
-
+			
 			Kcp.KcpInput(this.kcp, date, offset, length);
 			this.GetService().AddToUpdateNextTime(0, this.Id);
 
 			while (true)
 			{
+				if (this.IsDisposed)
+				{
+					return;
+				}
 				int n = Kcp.KcpPeeksize(this.kcp);
 				if (n < 0)
 				{
@@ -339,7 +355,7 @@ namespace ETModel
 					return;
 				}
 
-				lastRecvTime = this.GetService().TimeNow;
+				this.lastRecvTime = this.GetService().TimeNow;
 
 				this.OnRead(packet);
 			}
@@ -386,7 +402,7 @@ namespace ETModel
 			this.GetService().AddToUpdateNextTime(0, this.Id);
 		}
 
-		public override void Send(byte[] buffer, int index, int length)
+		private void Send(byte[] buffer, int index, int length)
 		{
 			if (isConnected)
 			{
