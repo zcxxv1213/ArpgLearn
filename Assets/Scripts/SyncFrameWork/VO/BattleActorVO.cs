@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using UnityEngine;
 namespace ETModel
 {
     public class BattleActorVO
@@ -16,6 +16,9 @@ namespace ETModel
             mPlayerId = v.PlayerId;
             mTeam = v.Team;
             mName = v.NickName;
+            Debug.Log(mTeam);
+            Debug.Log(mPlayerId);
+            Debug.Log(mName);
         }
     }
 }

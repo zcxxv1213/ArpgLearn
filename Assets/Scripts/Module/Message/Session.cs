@@ -132,16 +132,17 @@ namespace ETModel
 			ushort opcode = packet.Opcode;
 			
 #if !SERVER
-			if (OpcodeHelper.IsClientHotfixMessage(opcode))
+			/*if (OpcodeHelper.IsClientHotfixMessage(opcode))
 			{
 				this.Network.MessageDispatcher.Dispatch(this, packet);
 				return;
-			}
+			}*/
 #endif
-
+            Log.Info(flag.ToHex());
 			// flag第一位为1表示这是rpc返回消息,否则交由MessageDispatcher分发
 			if ((flag & 0x01) == 0)
 			{
+                Log.Info("Rpc");
 				this.Network.MessageDispatcher.Dispatch(this, packet);
 				return;
 			}

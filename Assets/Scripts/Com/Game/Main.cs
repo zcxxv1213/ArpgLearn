@@ -34,7 +34,7 @@ public class Main : MonoBehaviour
         DontDestroyOnLoad(gameLooepr);
         UnitConfig unitConfig = (UnitConfig)Game.Scene.GetComponent<ConfigComponent>().Get(typeof(UnitConfig), 1001);
         Debug.Log(unitConfig.Desc);
-        // this.CreatConnect();
+        this.CreatConnect();
         SynchronizationContext.SetSynchronizationContext(unityContext);
     }
     async void CreatConnect()
@@ -42,7 +42,7 @@ public class Main : MonoBehaviour
         IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 10002);
         Session session = Game.Scene.GetComponent<NetOuterComponent>().Create(iPEndPoint);
         Game.Scene.AddComponent<SessionComponent>().Session = session;
-    //    Debug.Log("Send");
+        Debug.Log("Send");
         R2C_Ping r2C_Ping = (R2C_Ping)await session.Call(new C2R_Ping() { });
         Debug.Log(SynchronizationContext.Current);
         Debug.Log(r2C_Ping.Message);

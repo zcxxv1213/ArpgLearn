@@ -70,6 +70,7 @@ namespace ETModel
 
 		public void RegisterHandler(ushort opcode, IMHandler handler)
 		{
+            Log.Debug(opcode.ToString());
 			if (!this.handlers.ContainsKey(opcode))
 			{
 				this.handlers.Add(opcode, new List<IMHandler>());
