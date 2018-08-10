@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Com.Game.Manager;
+using ETModel;
 
 namespace Assets.Scripts.Com.Game.Module.Scene
 {

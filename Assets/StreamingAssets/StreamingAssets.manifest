@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 1336466468
+CRC: 4255685382
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -7,8 +7,11 @@ AssetBundleManifest:
       Dependencies:
         Dependency_0: common/login
     Info_1:
-      Name: ui/view_root/view_root
+      Name: ui/main_interface/main_interface_view
       Dependencies: {}
     Info_2:
+      Name: ui/view_root/view_root
+      Dependencies: {}
+    Info_3:
       Name: common/login
       Dependencies: {}

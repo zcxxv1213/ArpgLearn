@@ -73,7 +73,6 @@ namespace Com.Game.Manager
         }
         static string[] GetAllDependenciesExternal(string assetBundleName)
         {
-           // Debug.Log(assetBundleName); 
             return mExternalManifest.GetAllDependencies(assetBundleName);
         }
         static string GetPath(string assetName)

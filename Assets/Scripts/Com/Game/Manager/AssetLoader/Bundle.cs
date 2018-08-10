@@ -43,7 +43,7 @@ namespace Com.Manager.AssetLoader
 
             if (this.www != null && this.www.isDone)
             {
-                if (this.www.error == "")
+                if (this.www.error == null)
                 {
                     this.mBundle = this.www.assetBundle;
                     Debug.Log("CheckLoad: " + mPath);
