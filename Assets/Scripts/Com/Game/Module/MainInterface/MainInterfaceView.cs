@@ -29,7 +29,7 @@ namespace Assets.Scripts.Com.Game.Module.MainInterface
         {
             base.Init();
             this.FindAndAddClickListener("Button_Test_C2G_Send_Msg", () => { OnClickTestC2GSendMsg(); }, null, 1);
-            this.FindAndAddClickListener("Button_Test_C2G_Send_Msg", () => { OnClickTestC2GEnterMap(); }, null, 1);
+            this.FindAndAddClickListener("Button_Test_C2G_Enter_Map", () => { OnClickTestC2GEnterMap(); }, null, 1);
         }
         private void OnClickTestC2GSendMsg()
         {
@@ -43,7 +43,7 @@ namespace Assets.Scripts.Com.Game.Module.MainInterface
                 Debug.LogError("Error:" + g2C_EnterMap.Error);
             }
             MapConfig mapConfig = (MapConfig)ETModel.Game.Scene.GetComponent<ConfigComponent>().Get(typeof(MapConfig), 10001);
-            ETModel.Game.Scene.AddComponent<BattleDataComponent>().InitActors(g2C_EnterMap.ActorVOs.array);
+            ETModel.Game.Scene.AddComponent<BattleDataComponent>().InitActors(g2C_EnterMap.ActorVOs);
             Debug.Log(g2C_EnterMap.UnitId);
             SceneManager.Instance.EnterSceneById((int)mapConfig.Id);
             //LoadScene - > Send LoadComplete -> Enter

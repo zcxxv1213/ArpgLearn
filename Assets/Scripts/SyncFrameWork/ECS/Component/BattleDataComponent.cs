@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Google.Protobuf.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -22,11 +24,11 @@ namespace ETModel
         {
 
         }
-        public void InitActors(ActorVo[] actorVos)
+        public void InitActors(RepeatedField<ActorVo> actorVos)
         {
-            foreach (var v in actorVos)
+            for (int i = 0; i < actorVos.Count; i++)
             {
-                actorVODic[v.PlayerId] = new BattleActorVO(v);
+                actorVODic.Add(actorVos.array[i].PlayerId, new BattleActorVO(actorVos.array[i]));
             }
         }
     }
