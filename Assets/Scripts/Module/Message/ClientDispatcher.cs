@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -6,6 +7,7 @@ namespace ETModel
 	{
 		public void Dispatch(Session session, Packet packet)
 		{
+            Debug.Log(packet.Opcode);
 			object message;
 			try
 			{
