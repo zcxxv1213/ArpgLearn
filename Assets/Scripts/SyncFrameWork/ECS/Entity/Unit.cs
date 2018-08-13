@@ -10,7 +10,7 @@ namespace ETModel
 	
 	public sealed class Unit: Entity
 	{
-		//public VInt3 IntPos;
+		public VInt3 IntPos;
 
 		public GameObject GameObject;
 		

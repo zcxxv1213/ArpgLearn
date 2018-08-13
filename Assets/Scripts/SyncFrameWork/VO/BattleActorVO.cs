@@ -16,9 +16,6 @@ namespace ETModel
             mPlayerId = v.PlayerId;
             mTeam = v.Team;
             mName = v.NickName;
-            Debug.Log(mTeam);
-            Debug.Log(mPlayerId);
-            Debug.Log(mName);
         }
     }
 }

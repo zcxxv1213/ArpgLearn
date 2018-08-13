@@ -28,6 +28,12 @@ namespace ETModel
 	[Message(HotfixOpcode.M2C_TestActorResponse)]
 	public partial class M2C_TestActorResponse : IActorResponse {}
 
+	[Message(HotfixOpcode.C2M_ReadyStartGame)]
+	public partial class C2M_ReadyStartGame : IActorRequest {}
+
+	[Message(HotfixOpcode.M2C_ReadyStartGame)]
+	public partial class M2C_ReadyStartGame : IActorResponse {}
+
 	[Message(HotfixOpcode.PlayerInfo)]
 	public partial class PlayerInfo : IMessage {}
 
@@ -36,6 +42,12 @@ namespace ETModel
 
 	[Message(HotfixOpcode.G2C_PlayerInfo)]
 	public partial class G2C_PlayerInfo : IResponse {}
+
+	[Message(HotfixOpcode.OneFrameMessage)]
+	public partial class OneFrameMessage : IActorMessage {}
+
+	[Message(HotfixOpcode.FrameMessage)]
+	public partial class FrameMessage : IActorMessage {}
 
 }
 namespace ETModel
@@ -51,8 +63,12 @@ namespace ETModel
 		 public const ushort G2C_TestHotfixMessage = 10007;
 		 public const ushort C2M_TestActorRequest = 10008;
 		 public const ushort M2C_TestActorResponse = 10009;
-		 public const ushort PlayerInfo = 10010;
-		 public const ushort C2G_PlayerInfo = 10011;
-		 public const ushort G2C_PlayerInfo = 10012;
+		 public const ushort C2M_ReadyStartGame = 10010;
+		 public const ushort M2C_ReadyStartGame = 10011;
+		 public const ushort PlayerInfo = 10012;
+		 public const ushort C2G_PlayerInfo = 10013;
+		 public const ushort G2C_PlayerInfo = 10014;
+		 public const ushort OneFrameMessage = 10015;
+		 public const ushort FrameMessage = 10016;
 	}
 }
