@@ -43,12 +43,6 @@ namespace ETModel
 	[Message(HotfixOpcode.G2C_PlayerInfo)]
 	public partial class G2C_PlayerInfo : IResponse {}
 
-	[Message(HotfixOpcode.OneFrameMessage)]
-	public partial class OneFrameMessage : IActorMessage {}
-
-	[Message(HotfixOpcode.FrameMessage)]
-	public partial class FrameMessage : IActorMessage {}
-
 }
 namespace ETModel
 {
@@ -68,7 +62,5 @@ namespace ETModel
 		 public const ushort PlayerInfo = 10012;
 		 public const ushort C2G_PlayerInfo = 10013;
 		 public const ushort G2C_PlayerInfo = 10014;
-		 public const ushort OneFrameMessage = 10015;
-		 public const ushort FrameMessage = 10016;
 	}
 }

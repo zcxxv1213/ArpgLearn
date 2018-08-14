@@ -38,6 +38,9 @@ namespace ETEditor
             Proto2CS("ETModel", "HotfixMessage.proto", hotfixMessagePath, "HotfixOpcode", 10000);
             msgOpcode.Clear();
             Proto2CS("ETHotfix", "HotfixMessage.proto", hotfixMessagePath, "HotfixOpcodeServer", 10000);
+
+            msgOpcode.Clear();
+            Proto2CS("ETModel", "FrameMessage.proto", hotfixMessagePath, "FrameOpcode", 20000);
 #if !UNITY_EDITOR_OSX
             CommandRun($"protoc.bat", "");
 #else

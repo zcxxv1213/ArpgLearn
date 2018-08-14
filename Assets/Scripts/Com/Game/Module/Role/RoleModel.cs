@@ -12,5 +12,9 @@ namespace Assets.Scripts.Com.Game.Module.Role
         {
             mPlayerInfoBase = info;
         }
+        public long GetPlayerID()
+        {
+            return mPlayerInfoBase.PlayerId;
+        }
     }
 }

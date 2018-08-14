@@ -752,6 +752,14 @@ namespace ETModel {
       }
     }
 
+    private long playerId_;
+    public long PlayerId {
+      get { return playerId_; }
+      set {
+        playerId_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (UnitId != 0L) {
         output.WriteRawTag(8);
@@ -764,6 +772,10 @@ namespace ETModel {
       if (Z != 0) {
         output.WriteRawTag(24);
         output.WriteInt32(Z);
+      }
+      if (PlayerId != 0L) {
+        output.WriteRawTag(32);
+        output.WriteInt64(PlayerId);
       }
     }
 
@@ -778,6 +790,9 @@ namespace ETModel {
       if (Z != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Z);
       }
+      if (PlayerId != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(PlayerId);
+      }
       return size;
     }
 
@@ -785,6 +800,7 @@ namespace ETModel {
       unitId_ = 0;
       x_ = 0;
       z_ = 0;
+      playerId_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -801,6 +817,10 @@ namespace ETModel {
           }
           case 24: {
             Z = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            PlayerId = input.ReadInt64();
             break;
           }
         }

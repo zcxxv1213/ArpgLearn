@@ -45,7 +45,7 @@ namespace ETModel
         {
             if (mStartGame)
             {
-                Debug.Log("Start");
+           //     Debug.Log("Start");
                 await timerComponent.WaitAsync(200);
                 ++Frame;
             }

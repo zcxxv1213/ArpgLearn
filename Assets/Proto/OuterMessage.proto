@@ -64,6 +64,7 @@ message UnitInfo
 	int64 UnitId  = 1;
 	int32 X       = 2;
 	int32 Z       = 3;
+	int64 PlayerId = 4;
 }
 
 message Actor_CreateUnits // IActorMessage

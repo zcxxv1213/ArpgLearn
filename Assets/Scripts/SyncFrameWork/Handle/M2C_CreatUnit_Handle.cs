@@ -28,11 +28,13 @@ namespace Assets.Scripts.SyncFrameWork.Handle
                     Unit unit = UnitFactory.Create(message.Units[i].UnitId,"TestName");
                     unit.Position = new Vector3(message.Units[i].X / 1000f, 0, message.Units[i].Z / 1000f);
                     unit.IntPos = new VInt3(message.Units[i].X, 0, message.Units[i].Z);
+                    unit.mPlayerID = message.Units[i].PlayerId;
                 }
             }
             //Add FrameCompoont SendStart proto
             Game.Scene.AddComponent<LockFrameComponent>();
             M2C_ReadyStartGame response = (M2C_ReadyStartGame)await ETModel.SessionComponent.Instance.Session.Call(new C2M_ReadyStartGame() { });
+            Debug.Log(response.Message);
             Game.Scene.GetComponent<LockFrameComponent>().StartGame(); 
         }
     }

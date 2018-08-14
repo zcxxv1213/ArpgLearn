@@ -95,20 +95,3 @@ message G2C_PlayerInfo // IResponse
 	string Message = 92;
 	PlayerInfo PlayerInfos = 1;
 }
-
-message OneFrameMessage // IActorMessage
-{
-	int32 RpcId = 90;
-	int64 ActorId = 93;
-	int32 Op = 1;
-	bytes AMessage = 2;
-}
-
-message FrameMessage // IActorMessage
-{
-	int32 RpcId = 90;
-	int64 ActorId = 93;
-
-	int32 Frame = 1;
-	repeated OneFrameMessage Message = 2;
-}

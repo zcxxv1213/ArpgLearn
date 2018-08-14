@@ -27,6 +27,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         }
         private void OnEnterBattleScene()
         {
+            ETModel.Game.Scene.AddComponent<BattleControlComponent>().CreatUnitModel(ETModel.Game.Scene.GetComponent<UnitComponent>().GetAll());
             CameraController.Instance.OnEnterBattleScene();
         }
         public override void BeforeExitScene()

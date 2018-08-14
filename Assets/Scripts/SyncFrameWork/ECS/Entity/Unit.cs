@@ -11,14 +11,26 @@ namespace ETModel
 	public sealed class Unit: Entity
 	{
 		public VInt3 IntPos;
-
+        private string mName;
 		public GameObject GameObject;
-		
-		public void Awake()
+        public long mPlayerID { get; set; }
+        public void Awake()
 		{
 		}
 
-		public Vector3 Position
+        public string name
+        {
+            get
+            {
+                return mName;
+            }
+            set
+            {
+                mName = value;
+            }
+        }
+
+        public Vector3 Position
 		{
 			get
 			{
