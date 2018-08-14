@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace ETModel
 {
+    public enum FrameType {
+        optimistic,
+        predict
+    }
     public struct SessionFrameMessage
     {
         public Session Session;
@@ -49,8 +53,10 @@ namespace ETModel
                 await timerComponent.WaitAsync(200);
                 ++Frame;
             }
+        }
+        public void OnRecvFrameMessage()
+        {
 
         }
-
     }
 }
