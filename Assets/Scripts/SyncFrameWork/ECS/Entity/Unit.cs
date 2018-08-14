@@ -13,6 +13,7 @@ namespace ETModel
 		public VInt3 IntPos;
         private string mName;
 		public GameObject GameObject;
+        public Vector3 Pos;
         public long mPlayerID { get; set; }
         public void Awake()
 		{
@@ -34,11 +35,11 @@ namespace ETModel
 		{
 			get
 			{
-				return GameObject.transform.position;
+				return Pos;
 			}
 			set
 			{
-				GameObject.transform.position = value;
+                Pos = value;
 			}
 		}
 

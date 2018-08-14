@@ -18,6 +18,7 @@ namespace ETModel
                 v.GameObject = obj;
                 if (v.mPlayerID == roleModel.GetPlayerID())
                 {
+                    Debug.Log("SetMainHero");
                     this.SetMainUnit(v); 
                 }
             }
