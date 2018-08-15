@@ -32,26 +32,40 @@ namespace ETModel
 
     public class LockFrameComponent : Component
     {
+        public int FrameRate = 32;
+        public int InfluenceResolution = 2;
+        public long DeltaTime = 0;
+        public float DeltaTimeF = 0;
         public int Frame;
-        private bool mStartGame = false;
+        public bool mStartGame = false;
         public FrameMessage FrameMessage;
+        private FrameType mFrameType;
+
+        private int InfluenceCount;
+        public int InfluenceFrameCount { get; private set; }
         TimerComponent timerComponent = Game.Scene.GetComponent<TimerComponent>();
         public void StartGame()
         {
+            mFrameType = FrameType.predict;
             this.mStartGame = true;
         }
         public void Awake()
         {
             Frame = 0;
+            DeltaTime = FixedMath.One / FrameRate;
+            DeltaTimeF = DeltaTime / FixedMath.OneF;
             FrameMessage = new FrameMessage() { Frame = Frame };
         }
         public async void Update()
         {
             if (mStartGame)
             {
-           //     Debug.Log("Start");
-                await timerComponent.WaitAsync(200);
-                ++Frame;
+                if (mFrameType == FrameType.optimistic)
+                {
+                    await timerComponent.WaitAsync(200);
+                    ++Frame;
+                }
+                
             }
         }
         public void OnRecvFrameMessage()
