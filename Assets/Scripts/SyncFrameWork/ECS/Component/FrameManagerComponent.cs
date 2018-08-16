@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace ETModel {
@@ -122,8 +123,33 @@ namespace ETModel {
             //frames[LockstepManager.InfluenceFrameCount] = null;
 
         }
+        public void AddFrame(int frameCount, Frame frame)
+        {
+            EnsureCapacity(frameCount + 1);
+            frames[frameCount] = frame;
 
+            hasFrame[frameCount] = true;
 
+            while (HasFrame(nextFrame))
+            {
+                ForeSight++;
+                nextFrame++;
+                LoadedFrames++;
+            }
+        }
+        private void EnsureCapacity(int min)
+        {
+            if (capacity < min)
+            {
+                capacity *= 2;
+                if (capacity < min)
+                {
+                    capacity = min;
+                }
+                Array.Resize(ref frames, capacity);
+                Array.Resize(ref hasFrame, capacity);
+            }
+        }
         public struct JitterSettings
         {
             public JitterSettings(float compensation, float sensitivity, float degrade)
