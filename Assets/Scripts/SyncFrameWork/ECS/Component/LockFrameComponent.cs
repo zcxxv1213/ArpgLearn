@@ -22,6 +22,14 @@ namespace ETModel
         }
     }
     [ObjectSystem]
+    public class LockFrameComponentLateUpdateSystem : LateUpdateSystem<LockFrameComponent>
+    {
+        public override void LateUpdate(LockFrameComponent self)
+        {
+            self.LateUpdate();
+        }
+    }
+    [ObjectSystem]
     public class LockFrameComponentUpdateAwakeSystem : AwakeSystem<LockFrameComponent>
     {
         public override void Awake(LockFrameComponent self)
@@ -36,11 +44,11 @@ namespace ETModel
         public int InfluenceResolution = 2;
         public long DeltaTime = 0;
         public float DeltaTimeF = 0;
-        public int Frame;
+        public int FrameCount;
         public bool mStartGame = false;
         public FrameMessage FrameMessage;
         private FrameType mFrameType;
-
+        static bool Stalled;
         private int InfluenceCount;
         public int InfluenceFrameCount { get; private set; }
         TimerComponent timerComponent = Game.Scene.GetComponent<TimerComponent>();
@@ -51,21 +59,61 @@ namespace ETModel
         }
         public void Awake()
         {
-            Frame = 0;
+            FrameCount = 0;
             DeltaTime = FixedMath.One / FrameRate;
             DeltaTimeF = DeltaTime / FixedMath.OneF;
-            FrameMessage = new FrameMessage() { Frame = Frame };
+            
+            PlayRate = FixedMath.One;
+            Time.timeScale = 1f;
+            InfluenceCount = 0;
+            this.SetUp();
+          //  FrameMessage = new FrameMessage() { Frame = Frame };
         }
-        public async void Update()
+        private void SetUp()
         {
-            if (mStartGame)
+            Time.fixedDeltaTime = DeltaTimeF;
+            Time.maximumDeltaTime = Time.fixedDeltaTime * 2;
+            LSUtility.Initialize(1);
+            Stalled = true;
+
+        }
+
+        private long _playRate = FixedMath.One;
+        public long PlayRate
+        {
+            get
             {
-                if (mFrameType == FrameType.optimistic)
+                return _playRate;
+            }
+            set
+            {
+                if (value != _playRate)
                 {
-                    await timerComponent.WaitAsync(200);
-                    ++Frame;
+                    _playRate = value;
+                    Time.timeScale = PlayRate.ToFloat();
+                    //Time.fixedDeltaTime = BaseDeltaTime / _playRate.ToFloat();
                 }
-                
+            }
+        }
+
+        public void Simulate()
+        {
+
+        }
+
+        public void Update()
+        {
+            if (!mStartGame)
+            {
+                return;
+            }
+        }
+
+        public void LateUpdate()
+        {
+            if (!mStartGame)
+            {
+                return;
             }
         }
         public void OnRecvFrameMessage()
