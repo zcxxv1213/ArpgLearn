@@ -36,7 +36,7 @@ namespace Assets.Scripts.SyncFrameWork.Handle
             Game.Scene.AddComponent<LockFrameComponent>();
             M2C_ReadyStartGame response = (M2C_ReadyStartGame)await ETModel.SessionComponent.Instance.Session.Call(new C2M_ReadyStartGame() { });
             Debug.Log(response.Message);
-            Game.Scene.GetComponent<LockFrameComponent>().StartGame(); 
+        //    Game.Scene.GetComponent<LockFrameComponent>().StartGame(); 
         }
     }
 }

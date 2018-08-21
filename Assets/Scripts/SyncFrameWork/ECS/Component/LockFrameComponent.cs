@@ -47,11 +47,20 @@ namespace ETModel
         public int FrameCount;
         public bool mStartGame = false;
         public FrameMessage FrameMessage;
+
+        FrameManagerComponent mFrameManagerComponent = null;
         private FrameType mFrameType;
         static bool Stalled;
         private int InfluenceCount;
         public int InfluenceFrameCount { get; private set; }
         TimerComponent timerComponent = Game.Scene.GetComponent<TimerComponent>();
+
+        public int PauseCount { get; private set; }
+
+        public bool IsPaused { get { return PauseCount > 0; } }
+
+
+
         public void StartGame()
         {
             mFrameType = FrameType.predict;
@@ -66,11 +75,13 @@ namespace ETModel
             PlayRate = FixedMath.One;
             Time.timeScale = 1f;
             InfluenceCount = 0;
+            PauseCount = 0; 
             this.SetUp();
           //  FrameMessage = new FrameMessage() { Frame = Frame };
         }
         private void SetUp()
         {
+            mFrameManagerComponent = ETModel.Game.Scene.GetComponent<FrameManagerComponent>();
             Time.fixedDeltaTime = DeltaTimeF;
             Time.maximumDeltaTime = Time.fixedDeltaTime * 2;
             LSUtility.Initialize(1);
@@ -98,9 +109,49 @@ namespace ETModel
 
         public void Simulate()
         {
+            if (InfluenceCount == 0)
+            {
+                InfluenceSimulate();
+                InfluenceCount = InfluenceResolution - 1;
+                if (mFrameManagerComponent.CanAdvanceFrame == false)
+                {
+                    Stalled = true;
+                    return;
+                }
+                Stalled = false;
+
+                mFrameManagerComponent.Simulate();
+                InfluenceFrameCount++;
+            }
+            else
+            {
+                InfluenceCount--;
+            }
+            if (Stalled || IsPaused)
+            {
+                return;
+            }
+
+            if (FrameCount == 0)
+            {
+                StartGame();
+            }
+            LateSimulate();
+            FrameCount++;
 
         }
 
+        private void LateSimulate()
+        {
+
+        }
+
+        public void InfluenceSimulate()
+        {
+          //  PlayerManager.Simulate();
+         //   CommandManager.Simulate();
+         //   ClientManager.Simulate();
+        }
         public void Update()
         {
             if (!mStartGame)

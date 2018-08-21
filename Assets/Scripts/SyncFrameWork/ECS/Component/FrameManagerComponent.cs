@@ -97,7 +97,7 @@ namespace ETModel {
 
         public static int EndFrame { get; set; }
 
-        public static bool CanAdvanceFrame
+        public bool CanAdvanceFrame
         {
             get { return (ForeSight > 0 && (ETModel.Game.Scene.GetComponent<LockFrameComponent>().mStartGame)); }
         }
