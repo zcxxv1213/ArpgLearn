@@ -26,14 +26,6 @@ namespace RollBack
 
         /// <summary>The current (last received) JLE. Used to syncronise NCF updates between client and server when clients join/leave. 0 if no events have been received yet.</summary>
         int latestJoinLeaveEvent;
-        /// <summary>The current frame for the game state (how the game appears to the local user).</summary>
-        /// <remarks>This is the frame of the last snapshot in the snapshot buffer.</remarks>
-        public int CurrentSimulationFrame { get; private set; }
-
-        /// <summary>The current frame for input and network timing (how the game appears to the network).</summary>
-        /// <remarks>This is the frame of the last input in the local input buffer.</remarks>
-        public int CurrentFrame { get; private set; }
-
 
         /// <summary>The connection ID for each JLE, indexed by JLE# (not by frame)</summary>
         FrameDataBuffer<int> hostForJLE = new FrameDataBuffer<int>();
@@ -1442,6 +1434,323 @@ namespace RollBack
             packetTimeTracker.Update(Time.time);
             synchronisedClock.Update(elapsedTime.TotalSeconds);
         }
+
+        #endregion
+        #region Input Broadcast
+
+        // TODO: REMOVE ME! (this exists for testing only)
+        public bool debugDisableInputBroadcast;
+
+
+        int _localInputSourceIndex = 0;
+        public int LocalInputSourceIndex
+        {
+            get { return _localInputSourceIndex; }
+            set
+            {
+                if (value >= 0 && value < MultiInputState.Count)
+                    _localInputSourceIndex = value;
+            }
+        }
+
+
+        int coalescedInputCount;
+        InputState? coalescedInput;
+
+        void SendOrCoalesceInput(InputState inputState)
+        {
+            // We tolerate duplicate input frames when receiving, so the fact we could be re-sending
+            // inputs that we already sent during a join doesn't matter.
+
+            Debug.Assert(coalescedInputCount >= 0 && coalescedInputCount <= coalescedInputMaxCount);
+            if (!coalescedInput.HasValue || coalescedInput.Value != inputState || coalescedInputCount == coalescedInputMaxCount)
+            {
+                // Send:
+              /*  NetOutgoingMessage message = network.CreateMessage();
+                WriteInputHeader(message, InputFormat.Coalesced, CurrentFrame - coalescedInputCount);
+                WriteInputCoalesced(message, coalescedInput, coalescedInputCount, inputState);
+                WriteLocalNCFAndJLE(message);
+                */
+                if (!debugDisableInputBroadcast)
+                 //   network.Broadcast(message, NetDeliveryMethod.ReliableUnordered, 0);
+
+                // Start new delay:
+                coalescedInputCount = 0;
+                coalescedInput = inputState;
+            }
+            else
+            {
+                // Continue delaying:
+                coalescedInputCount++;
+                coalescedInput = inputState;
+            }
+        }
+
+
+        /// <summary>Note: This expects that the current frame is set to the frame that this input is for (this input is to advance currentFrame-1 to currentFrame)</summary>
+        void ExtractAndBroadcastLocalInput(MultiInputState unnetworkedInputs)
+        {
+            InputState localInput = unnetworkedInputs[LocalInputSourceIndex];
+
+            Debug.Assert(!LocalInputBuffer.ContainsKey(CurrentFrame));
+            LocalInputBuffer.Add(CurrentFrame, localInput);
+
+            SendOrCoalesceInput(localInput);
+        }
+
+
+        #endregion
+
+        #region Input Receive/Write Coalesced
+
+        const int coalescedInputBits = 4;
+        const int coalescedInputMaxCount = (1 << coalescedInputBits) - 1;
+
+
+        /// <param name="endFrame">The frame following the final frame written.</param>
+        void ReceiveInputCoalesced(InputBuffer inputBuffer, int frame, out int endFrame)
+        {
+            endFrame = frame;
+
+            int firstInputCount = 1;
+            InputState firstInput = default(InputState);
+            InputState lastInput = InputState.Input0;
+            try
+            {
+                /*firstInputCount = (int)message.ReadUInt32(coalescedInputBits);
+                if (firstInputCount > 0)
+                    firstInput = message.ReadInputState(inputBitsUsed);
+                lastInput = message.ReadInputState(inputBitsUsed);*/
+            }
+            catch (Exception e) { Debug.LogError("Bad input message (coalesced)"); }
+
+
+            for (int i = 0; i < firstInputCount; i++)
+            {
+                ApplyInput(inputBuffer, endFrame, firstInput);
+                endFrame++;
+            }
+
+            ApplyInput(inputBuffer, endFrame, lastInput);
+            endFrame++;
+        }
+
+
+        void WriteInputCoalesced( InputState? firstInput, int firstInputCount, InputState lastInput)
+        {
+            Debug.Assert(firstInputCount >= 0 && firstInputCount <= coalescedInputMaxCount);
+            Debug.Assert(firstInputCount == 0 || firstInput.HasValue);
+
+           /* message.Write((uint)firstInputCount, coalescedInputBits);
+            if (firstInputCount > 0)
+                message.WriteInputState(firstInput.Value, inputBitsUsed);
+            message.WriteInputState(lastInput, inputBitsUsed);*/
+        }
+
+        #endregion
+
+        #region Input Messages
+
+        enum InputFormat
+        {
+            Coalesced = 0,
+            RLE = 1
+        }
+
+
+        /// <summary>Read an input message (with a header) into the given input buffer.</summary>
+        void ReceiveInputMessage( InputBuffer inputBuffer)
+        {
+            bool isRLE = false;
+            int frame = 1;
+            try
+            {
+              //  isRLE = message.ReadBoolean();
+             //   frame = message.ReadInt32();
+            }
+            catch (Exception e) { Debug.LogError("Bad input message"); }
+
+            if (frame > CurrentFrame + InputExcessFrontstop)
+            {
+            //    RejectInputPastFrontstop(remotePeer);
+                return;
+            }
+
+            int frameAfterRemoteCurrentFrame = 0;
+            if (isRLE)
+            {
+             //   ReceiveInputRLE(inputBuffer, message, frame, out frameAfterRemoteCurrentFrame);
+            }
+            else
+            {
+              //  ReceiveInputCoalesced(inputBuffer, message, frame, out frameAfterRemoteCurrentFrame);
+              //  ReceiveRemoteNCFAndJLE(remotePeer, frame, message);
+            }
+
+            if (frameAfterRemoteCurrentFrame - 1 > CurrentFrame + InputExcessFrontstop)
+            {
+           //     RejectInputPastFrontstop(remotePeer);
+                return;
+            }
+
+          /*  if (remotePeer.PeerInfo.IsServer)
+            {
+                ClientReceiveTimingPacket(frameAfterRemoteCurrentFrame - 1, message);
+            }*/
+        }
+
+
+        /// <summary>Callers are expected to write out remaining input message following the header</summary>
+        static void WriteInputHeader( InputFormat inputFormat, int startFrame)
+        {
+           /* message.Write(inputFormat != InputFormat.Coalesced);
+            message.Write(startFrame);*/
+        }
+
+
+        void RejectInputPastFrontstop()
+        {
+           /* if (remotePeer.IsConnected)
+            {
+                network.Log("Hit excess input frontstop for " + remotePeer.PeerInfo);
+                network.NetworkDataError(remotePeer, null);
+            }*/
+        }
+
+        #endregion
+
+
+        #region Update
+
+        void ReadAllNetworkMessages()
+        {
+            //读取信息
+           /* foreach (var remotePeer in network.RemotePeers)
+            {
+                InputBuffer inputBuffer = inputBuffers[remotePeer.PeerInfo.InputAssignment.GetFirstAssignedPlayerIndex()];
+
+                // IMPORANT NOTE: Do not access message.SenderConnection.Tag from any queued messages, as this
+                //                is a network-race-condition. Best simply not access it at all in the rollback driver!
+                NetIncomingMessage message;
+                while ((message = remotePeer.ReadMessage()) != null)
+                {
+                    try
+                    {
+                        if (message.DeliveryMethod == NetDeliveryMethod.ReliableUnordered && message.SequenceChannel == 0) // Input channel
+                        {
+                            ReceiveInputMessage(remotePeer, inputBuffer, message);
+                        }
+                        else if (message.DeliveryMethod == NetDeliveryMethod.ReliableOrdered && message.SequenceChannel == desyncDumpChannel)
+                        {
+                            ReceiveDesyncDebug(remotePeer, message);
+                        }
+                        else
+                        {
+                            throw new ProtocolException("Message received on unused channel from " + remotePeer.PeerInfo);
+                        }
+                    }
+                    catch (NetworkDataException exception)
+                    {
+                        network.NetworkDataError(remotePeer, exception);
+                    }
+                }
+            }*/
+        }
+
+
+
+        /// <summary>Important: Call P2PNetwork.Update before calling this method.</summary>
+        public void Update(TimeSpan elapsedTime, MultiInputState unnetworkedInputs)
+        {
+           /* if (!network.IsApplicationConnected)
+                return; // Nothing to do!*/
+
+            // This is a suitable proxy for "have we started running" on both client and server:
+            Debug.Assert(latestJoinLeaveEvent > 0);
+
+            try
+            {
+                ReadAllNetworkMessages();
+
+                CheckRemoteNCFAndJLEBackstop();
+
+                DoPrediction();
+
+                UpdateNewestConsistentFrame();
+
+                /* if (network.IsServer)
+                 {
+                     Tick(unnetworkedInputs);
+                 }*/
+                ClientUpdateTiming(elapsedTime);
+
+                // Check we're not about to flood the network.
+                // Note: This limit is still quite high. Could do fancy things like RLE so we don't send
+                //       a huge number of packets when approaching this limit. But probably not worth it.
+                if (CurrentFrame < synchronisedClock.CurrentFrame - InputBroadcastFloodLimit)
+                {
+                  //  network.Disconnect(UserVisibleStrings.GameClockOutOfSync);
+                    return;
+                }
+
+                while (CurrentFrame < synchronisedClock.CurrentFrame)
+                    Tick(unnetworkedInputs);
+
+                CleanupBuffers();
+            }
+            catch (Exception e) { return; } // The network disconnected us
+        }
+
+
+        int _localFrameDelay = 0;
+        /// <summary>
+        /// Number of frames to delay local inputs, which reduces the number of frames of "guesses" (prediction)
+        /// for remote inputs (and, hence, reduces prediction glitches). Set to zero for the most responsive local inputs.
+        /// Set to a low number (eg: 2) to reduce glitching at the expence of some input latency.
+        /// Set to a high number (eg: 30) to greatly reduce glitching for spectating (but is unplayable locally).
+        /// </summary>
+        public int LocalFrameDelay
+        {
+            get { return _localFrameDelay; }
+            set { _localFrameDelay = Math.Max(0, value); }
+        }
+
+
+        /// <summary>The current frame for the game state (how the game appears to the local user).</summary>
+        /// <remarks>This is the frame of the last snapshot in the snapshot buffer.</remarks>
+        public int CurrentSimulationFrame { get; private set; }
+
+        /// <summary>The current frame for input and network timing (how the game appears to the network).</summary>
+        /// <remarks>This is the frame of the last input in the local input buffer.</remarks>
+        public int CurrentFrame { get; private set; }
+
+
+
+        /// <param name="displayToUser">True if this is the final tick we are going to do during the update (ie: it will draw)</param>
+        void Tick(MultiInputState unnetworkedInputs)
+        {
+            // Advance input:
+            CurrentFrame++;
+            ExtractAndBroadcastLocalInput(unnetworkedInputs);
+
+            // Advance game state:
+            // (Note that we don't ever move the simulation frame backwards, we just wait to catch up)
+            while (CurrentSimulationFrame < CurrentFrame - LocalFrameDelay)
+            {
+                CurrentSimulationFrame++;
+
+                game.BeforeRollbackAwareFrame(CurrentSimulationFrame, false);
+                RunGameJoinLeaveEvents(CurrentSimulationFrame, true);
+                game.Update(GetInputForFrame(CurrentSimulationFrame), true);
+                game.AfterRollbackAwareFrame();
+
+                Debug.Assert(!snapshotBuffer.ContainsKey(CurrentSimulationFrame)); // First time adding this frame
+                Debug.Assert(!hashBuffer.ContainsKey(CurrentSimulationFrame)); // First time adding this frame
+                //反序列化
+                //snapshotBuffer[CurrentSimulationFrame] = game.Serialize();
+            }
+        }
+
 
         #endregion
 
