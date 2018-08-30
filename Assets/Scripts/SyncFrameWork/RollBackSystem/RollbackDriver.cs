@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RollBack.Input;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,11 +21,8 @@ namespace RollBack
             SetupOnlineStateBuffers();
             SetupInputBuffers();
         }
-     
-        /// <summary>The <see cref="newestConsistentFrame"/> on the server</summary>
-        int serverNewestConsistentFrame;
-        /// <summary>Ordered list of join/leave events</summary>
-        List<JoinLeaveEvent> joinLeaveEvents = new List<JoinLeaveEvent>();
+
+
 
         /// <summary>The current (last received) JLE. Used to syncronise NCF updates between client and server when clients join/leave. 0 if no events have been received yet.</summary>
         int latestJoinLeaveEvent;
@@ -35,11 +33,7 @@ namespace RollBack
         /// <summary>The current frame for input and network timing (how the game appears to the network).</summary>
         /// <remarks>This is the frame of the last input in the local input buffer.</remarks>
         public int CurrentFrame { get; private set; }
-        public const int FramesPerSecond = 60;
-        public static readonly TimeSpan FrameTime = new TimeSpan(166667); // 60 FPS
 
-        PacketTimeTracker packetTimeTracker;
-        SynchronisedClock synchronisedClock;
 
         /// <summary>The connection ID for each JLE, indexed by JLE# (not by frame)</summary>
         FrameDataBuffer<int> hostForJLE = new FrameDataBuffer<int>();
@@ -216,6 +210,19 @@ namespace RollBack
 
             RunPendingHashChecks();
         }
+        void ResetLocalNCF(int frame)
+        {
+         //   Debug.Assert(!network.IsServer);
+            Debug.Assert(frame >= CleanUpBeforeFrame);
+
+            if (newestConsistentFrame > frame)
+            {
+                newestConsistentFrame = frame;
+
+                // Hashes are no longer valid
+                hashBuffer.RemoveAllFrom(frame + 1);
+            }
+        }
 
         #endregion Newest Consistent Frame (NCF)
         /// <summary>For each player (by input index), a sparse frame buffer of online state.</summary>
@@ -260,18 +267,129 @@ namespace RollBack
             public bool Online { get { return JoiningPlayerName != null; } }
         }
 
-        #endregion
-
-        InputBuffer[] inputBuffers;
-
-        void SetupInputBuffers()
+        /// <summary>Append an online state change for a particular input index. Changes must be applied in order per-input-index.</summary>
+        /// <param name="joiningPlayerName">The name of a joining player, or null for a leaving player</param>
+        void AppendOnlineStateChange(int eventId, int inputIndex, int frame, string joiningPlayerName, byte[] joiningPlayerData)
         {
-            inputBuffers = new InputBuffer[InputAssignmentExtensions.MaxPlayerInputAssignments];
-            for (int i = 0; i < inputBuffers.Length; i++)
+            FrameDataBuffer<OnlineState> onlineStateBuffer = onlineStateBuffers[inputIndex];
+
+            // Each input index's Join/Leave events must be ordered by frame (ie: cannot insert a join before a leave,
+            // which would represent two clients online at the same time, which is not possible)
+            if (onlineStateBuffer.Count > 0)
             {
-                inputBuffers[i] = new InputBuffer();
+                int lastOnlineStateFrame = onlineStateBuffer.Keys[onlineStateBuffer.Count - 1];
+                OnlineState lastOnlineState = onlineStateBuffer.Values[onlineStateBuffer.Count - 1];
+
+                if (frame < lastOnlineStateFrame || (joiningPlayerName != null) == lastOnlineState.Online)
+                {
+                    //  Debug.Assert(!network.IsServer); // <- If this ever happens on the server it's a local programming error!
+                    Debug.LogError("Bad online state ordering");
+                }
+            }
+
+            if (onlineStateBuffer.Count > 0 && onlineStateBuffer.Keys[onlineStateBuffer.Count - 1] == frame)
+            {
+                // Already had an event on that frame, so "stack" a new one on top
+                onlineStateBuffer[onlineStateBuffer.Keys[onlineStateBuffer.Count - 1]] = new OnlineState(eventId, joiningPlayerName, joiningPlayerData, onlineStateBuffer.Values[onlineStateBuffer.Count - 1]);
+            }
+            else
+            {
+                onlineStateBuffer.Add(frame, new OnlineState(eventId, joiningPlayerName, joiningPlayerData));
             }
         }
+
+
+
+        void RunGameJoinLeaveEventsRecursiveHelper(int frame, int inputIndex, OnlineState onlineState, bool firstTimeSimulated)
+        {
+            // Recurse to start of linked list before running events in order
+            if (onlineState.PreviousThisFrame != null)
+                RunGameJoinLeaveEventsRecursiveHelper(frame, inputIndex, onlineState.PreviousThisFrame, firstTimeSimulated);
+
+            if (onlineState.Online)
+                game.PlayerJoin(inputIndex, onlineState.JoiningPlayerName, onlineState.JoiningPlayerData, firstTimeSimulated);
+            else
+                game.PlayerLeave(inputIndex, firstTimeSimulated);
+        }
+
+        void RunGameJoinLeaveEvents(int frame, bool firstTimeSimulated)
+        {
+            for (int i = 0; i < onlineStateBuffers.Length; i++)
+            {
+                OnlineState onlineState;
+                if (onlineStateBuffers[i].TryGetValue(frame, out onlineState))
+                {
+                    RunGameJoinLeaveEventsRecursiveHelper(frame, i, onlineState, firstTimeSimulated);
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Returns the frame number of the join event associated with a given leave event, or a later frame up to or equal to the leave frame.
+        /// </summary>
+        /// <remarks>
+        /// Note that there is no sync between JLE clean-up and online-state clean-up, so it's possible that the join state change
+        /// (and even the leave state change) may not be found. Even if it is found, it may be ahead of the true join frame, as
+        /// a client coming online will set online-state at the consistent frame.
+        /// Because we can return a later-than-true frame normally, just return the latest possible frame if we can't find either frame.
+        /// </remarks>
+        int FindMinimumKnownJoinFrameForLeaveEvent(int eventId, int inputIndex, int leaveFrame)
+        {
+            var onlineStateBuffer = onlineStateBuffers[inputIndex];
+
+            OnlineState onlineStateForLeave;
+            if (!onlineStateBuffer.TryGetValue(leaveFrame, out onlineStateForLeave))
+            {
+                return leaveFrame; // not found
+            }
+
+            // Walk backwards to find the actual leave state change:
+            while (onlineStateForLeave.EventId != leaveFrame)
+            {
+                if (onlineStateForLeave.PreviousThisFrame == null)
+                    return leaveFrame; // not found
+                onlineStateForLeave = onlineStateForLeave.PreviousThisFrame;
+            }
+
+            if (onlineStateForLeave.PreviousThisFrame != null)
+            {
+                Debug.Assert(onlineStateForLeave.Online == false);
+                Debug.Assert(onlineStateForLeave.PreviousThisFrame.Online == true);
+                return leaveFrame; // Left on the same frame as the join (was online for 0 frames)
+            }
+
+            // There are no more online state changes on the leaving frame.
+            // So the last online state change before the leave frame must be the expected join:
+
+            OnlineState onlineStateForJoin;
+            int joinFrame = onlineStateBuffer.TryGetLastBeforeOrAtFrame(leaveFrame - 1, out onlineStateForJoin);
+
+            if (joinFrame == -1)
+                return leaveFrame; // not found
+
+            Debug.Assert(onlineStateForJoin.Online);
+            return joinFrame;
+        }
+
+
+        int FindLocalJoinFrame()
+        {
+          //  Debug.Assert(network.IsApplicationConnected);
+
+            // We should be the latest entry in our own online state buffer:
+         //   var onlineStateBuffer = onlineStateBuffers[network.LocalPeerInfo.InputAssignment.GetFirstAssignedPlayerIndex()];
+            var onlineStateBuffer = onlineStateBuffers[0];
+            Debug.Assert(onlineStateBuffer.Values[onlineStateBuffer.Count - 1].Online);
+       //     Debug.Assert(onlineStateBuffer.Values[onlineStateBuffer.Count - 1].JoiningPlayerName == network.LocalPeerInfo.PlayerName);
+
+            return onlineStateBuffer.Keys[onlineStateBuffer.Count - 1];
+        }
+
+        #endregion
+
+
         #region Snapshot Buffer
 
         // TODO: Make the snapshot buffer a sparse buffer to save memory and serialization time
@@ -378,7 +496,8 @@ namespace RollBack
         #endregion
 
         #region Join/Leave Events
-
+        /// <summary>Ordered list of join/leave events</summary>
+        List<JoinLeaveEvent> joinLeaveEvents = new List<JoinLeaveEvent>();
         private struct JoinLeaveEvent
         {
             /// <param name="joiningPlayerName">The name of a joining player, or null for a leaving player</param>
@@ -491,7 +610,7 @@ namespace RollBack
         void HandleDesync(int remoteNCF, uint remoteHash, int remoteJLE, int remoteHost, int connectionId)
         {
             // Try to reconstruct who was responsible:
-            RemotePeer remotePeer = null;
+            /*RemotePeer remotePeer = null;
             foreach (var rp in network.RemotePeers)
             {
                 if (rp.PeerInfo.ConnectionId == connectionId)
@@ -499,19 +618,19 @@ namespace RollBack
                     remotePeer = rp;
                     break;
                 }
-            }
-
-            if (remotePeer == null)
+            }*/
+            Debug.Log("DESYNC! Peer #" + connectionId + " (no longer connected) desynced at frame " + remoteNCF + " with JLE " + remoteJLE);
+           /* if (remotePeer == null)
             {
                 network.Log("DESYNC! Peer #" + connectionId + " (no longer connected) desynced at frame " + remoteNCF + " with JLE " + remoteJLE);
                 return;
-            }
+            }*/
 
             if (!desyncedRemotes.ContainsKey(connectionId)) // <- first desync encountered
             {
                 desyncedRemotes.Add(connectionId, remoteNCF);
-
-                network.Log("DESYNC! Peer #" + connectionId + " \"" + remotePeer.PeerInfo.PlayerName + "\" desynced at frame " + remoteNCF + " with JLE " + remoteJLE);
+                Debug.Log("DESYNC! Peer #" + connectionId  + "\" desynced at frame " + remoteNCF + " with JLE " + remoteJLE);
+              //  network.Log("DESYNC! Peer #" + connectionId + " \"" + remotePeer.PeerInfo.PlayerName + "\" desynced at frame " + remoteNCF + " with JLE " + remoteJLE);
 
 
                 // Try to send as many frames back as we can, up to the limit...
@@ -533,25 +652,27 @@ namespace RollBack
 
                 if (count == 0)
                 {
-                    network.Log("(Failed to send a desync dump!)");
+                    Debug.LogError("(Failed to send a desync dump!)");
+                  //  network.Log("(Failed to send a desync dump!)");
                 }
                 else
                 {
                     int startFrame = remoteNCF - (count - 1);
 
-                    NetOutgoingMessage message = network.CreateMessage();
+                   /* NetOutgoingMessage message = network.CreateMessage();
                     message.Write(latestJoinLeaveEvent); // <- consistency stream
                     message.Write(GetCurrentHostId()); // <-----'
                     message.Write(startFrame);
-                    message.Write(count);
+                    message.Write(count);*/
+                    //发送信息给服务器
                     for (int i = 0; i < count; i++)
                     {
                         var buffer = snapshotBuffer[startFrame + i];
-                        message.Write(buffer.Length);
-                        message.Write(buffer);
+                    //    message.Write(buffer.Length);
+                    //    message.Write(buffer);
                     }
 
-                    remotePeer.Send(message, NetDeliveryMethod.ReliableOrdered, desyncDumpChannel);
+                   // remotePeer.Send(message, NetDeliveryMethod.ReliableOrdered, desyncDumpChannel);
 
 
                     // Also do a local dump of that frame (while we know it exists)
@@ -580,9 +701,11 @@ namespace RollBack
 
         HashSet<int> receivedDesyncDebugFrom = new HashSet<int>();
 
-        private void ReceiveDesyncDebug(RemotePeer remotePeer, NetIncomingMessage message)
+        private void ReceiveDesyncDebug()
         {
-            int connectionId = remotePeer.PeerInfo.ConnectionId;
+            //先学写死RemoteID
+            int connectionId = 1;
+          //  int connectionId = remotePeer.PeerInfo.ConnectionId;
 
             // Security: Disallow handling of multiple dump packets from the same client
             if (!receivedDesyncDebugFrom.Add(connectionId))
@@ -593,35 +716,43 @@ namespace RollBack
                 desyncedRemotes[connectionId] = int.MaxValue;
 
 
-            int receivedJLE;
-            int receivedHostId;
-            int receivedStartFrame;
-            int receivedCount;
-            byte[][] receivedSnapshots;
+            int receivedJLE = 1;
+            int receivedHostId = 1;
+            int receivedStartFrame = 1;
+            int receivedCount = 1;
+            byte[][] receivedSnapshots = new byte[0][];
 
             try
             {
-                receivedJLE = message.ReadInt32();
-                receivedHostId = message.ReadInt32();
-                receivedStartFrame = message.ReadInt32();
-                receivedCount = message.ReadInt32();
-
+                /*   receivedJLE = message.ReadInt32();
+                   receivedHostId = message.ReadInt32();
+                   receivedStartFrame = message.ReadInt32();
+                   receivedCount = message.ReadInt32();
+                   */
+                receivedJLE = 1;
+                receivedHostId = 1;
+                receivedStartFrame = 1;
+                receivedCount = 1; 
                 if (receivedCount > desyncMaxDumpFrames)
-                    throw new Exception("Too many frames in desync dump");
+                    Debug.LogError("Too many frames in desync dump");
+                 //   throw new Exception("Too many frames in desync dump");
                 receivedSnapshots = new byte[receivedCount][];
 
                 for (int i = 0; i < receivedCount; i++)
                 {
-                    int length = message.ReadInt32();
+                    //   int length = message.ReadInt32();
+                    int length = 1;
                     if (length > desyncMaxSnapshotSize)
-                        throw new Exception("Desync dump snapshot too large");
-                    receivedSnapshots[i] = message.ReadBytes(length);
+                        Debug.LogError("Desync dump snapshot too large");
+                    //  throw new Exception("Desync dump snapshot too large");
+                    //  receivedSnapshots[i] = message.ReadBytes(length);
+                    receivedSnapshots[i] = new byte[0];
                 }
             }
-            catch (Exception e) { throw new ProtocolException("Bad Remote Desync Snapshot", e); }
+            catch (Exception e) { Debug.LogError("Bad Remote Desync Snapshot"); }
 
-            network.Log("Received desync dump from Peer #" + connectionId + " \"" + remotePeer.PeerInfo.PlayerName + "\"");
-
+         //   network.Log("Received desync dump from Peer #" + connectionId + " \"" + remotePeer.PeerInfo.PlayerName + "\"");
+            Debug.Log("Received desync dump from Peer #" + connectionId );
 
             if (receivedJLE != latestJoinLeaveEvent || receivedHostId != GetCurrentHostId())
                 return; // Different consistency stream
@@ -636,7 +767,7 @@ namespace RollBack
                 byte[] localSnapshot;
                 if (snapshotBuffer.TryGetValue(frame, out localSnapshot))
                 {
-                    if (!RollbackNative.CompareBuffers(receivedSnapshots[i], localSnapshot))
+                    if (!RollbackBufferCompare.CompareBuffers(receivedSnapshots[i], localSnapshot))
                     {
                         // Found the desync frame!
                         if (dumpTarget != null)
@@ -653,5 +784,666 @@ namespace RollBack
 
 
         #endregion
+
+        #region Buffer Cleanup
+
+        int CleanUpBeforeFrame
+        {
+            get
+            {
+                int cleanUpBefore = Math.Min(newestConsistentFrame, serverNewestConsistentFrame); // TODO: local NCF is covered by global NCF, and is server necessary?
+                cleanUpBefore = Math.Min(cleanUpBefore, GetGlobalMinimumNCF());
+
+                // Buffered JLEs could be unwound at any point, so don't clean up past them:
+                foreach (var jle in joinLeaveEvents)
+                {
+                    if (jle.frame < cleanUpBefore)
+                        cleanUpBefore = jle.frame;
+                }
+
+                return cleanUpBefore;
+            }
+        }
+        void CleanupBuffers()
+        {
+            // Clean up frame buffers:
+            int cleanUpBefore = CleanUpBeforeFrame;
+
+            // If this triggers, we're keeping too many buffered values!
+            Debug.Assert(cleanUpBefore >= CurrentFrame - DebugBackstop);
+
+            // Never clean up beyond the current simulation position:
+            Debug.Assert(cleanUpBefore <= CurrentFrame);
+            Debug.Assert(cleanUpBefore <= CurrentSimulationFrame);
+
+            for (int i = 0; i < inputBuffers.Length; i++)
+                inputBuffers[i].CleanUpBefore(cleanUpBefore);
+            for (int i = 0; i < onlineStateBuffers.Length; i++)
+                onlineStateBuffers[i].CleanUpBefore(cleanUpBefore);
+
+            snapshotBuffer.CleanUpBefore(cleanUpBefore);
+            hashBuffer.CleanUpBefore(cleanUpBefore);
+
+            // Clean up JLE buffer:
+            int globalMinJLE = GetGlobalMinimumJLE();
+            while (joinLeaveEvents.Count > 0 && joinLeaveEvents[0].eventId <= globalMinJLE)
+            {
+                joinLeaveEvents.RemoveAt(0);
+            }
+            hostForJLE.CleanUpBefore(globalMinJLE - 1);
+        }
+
+        #endregion
+        #region Remote NCFs and JLE# tracking
+
+        /// <summary>The <see cref="newestConsistentFrame"/> on the server</summary>
+        int serverNewestConsistentFrame;
+
+        private class RemoteStatus
+        {
+            public int ncf, jle;
+        }
+
+        Dictionary<int, RemoteStatus> remoteStatuses = new Dictionary<int, RemoteStatus>();
+        int GetGlobalMinimumNCF()
+        {
+            int minNCF = newestConsistentFrame;
+            foreach (var rs in remoteStatuses.Values)
+            {
+                if (rs.ncf < minNCF)
+                    minNCF = rs.ncf;
+            }
+            return minNCF;
+        }
+        int GetGlobalMinimumJLE()
+        {
+            int minJLE = latestJoinLeaveEvent;
+            foreach (var rs in remoteStatuses.Values)
+            {
+                if (rs.jle < minJLE)
+                    minJLE = rs.jle;
+            }
+            return minJLE;
+        }
+        void StartTrackingRemoteNCFAndJLE(int connectionId, int initialNCF, int initialJLE)
+        {
+            remoteStatuses.Add(connectionId, new RemoteStatus { ncf = initialNCF, jle = initialJLE });
+        }
+        void StopTrackingRemoteNCFAndJLE(int connectionId)
+        {
+            bool removed = remoteStatuses.Remove(connectionId);
+            Debug.Assert(removed);
+        }
+        void ReconstructRemoteStatuses(int initialNCF, int initialJLE)
+        {
+            // Remove statuses for peers that don't exist (host migration removed them)
+            if (remoteStatuses.Count > 0)
+            {
+                List<int> toRemove = new List<int>();
+                foreach (var connectionId in remoteStatuses.Keys)
+                {
+                   /* foreach (var remotePeer in network.RemotePeers)
+                    {
+                        if (remotePeer.PeerInfo.ConnectionId == connectionId)
+                            goto next;
+                    }*/
+                    // Not found:
+                    toRemove.Add(connectionId);
+                    next:
+                    ;
+                }
+
+                foreach (var connectionId in toRemove)
+                    remoteStatuses.Remove(connectionId);
+            }
+
+            // Add statuses for peers we aren't tracking yet:
+            /*foreach (var remotePeer in network.RemotePeers)
+            {
+                if (!remoteStatuses.ContainsKey(remotePeer.PeerInfo.ConnectionId))
+                {
+                    StartTrackingRemoteNCFAndJLE(remotePeer.PeerInfo.ConnectionId, initialNCF, initialJLE);
+                }
+            }*/
+
+        }
+        void WriteLocalNCFAndJLE()
+        {
+           /* message.Write(newestConsistentFrame);
+            message.Write(latestJoinLeaveEvent);
+            message.Write(GetCurrentHostId());
+            message.Write(GetHashForSnapshot(newestConsistentFrame));*/
+        }
+
+        void ReceiveRemoteNCFAndJLE( int relativeToFrame)
+        {
+            int receivedJLE = 1;
+            int receivedNCF = 1;
+            int receivedHostId = 1;
+            uint receivedHash = 1;
+            try
+            {
+               /* receivedNCF = message.ReadInt32();
+                receivedJLE = message.ReadInt32();
+                receivedHostId = message.ReadInt32();
+                receivedHash = message.ReadUInt32();*/
+            }
+            catch (Exception e) { Debug.LogError("Bad NCF&JLE message"); }
+
+
+            //int connectionId = remotePeer.PeerInfo.ConnectionId;
+            int connectionId = 1;
+            Debug.Assert(remoteStatuses.ContainsKey(connectionId)); // Should have been added on join
+            Debug.Assert(remoteStatuses.Count <= InputAssignmentExtensions.MaxPlayerInputAssignments); // Check remotes are being removed when they leave
+            RemoteStatus remoteStatus = remoteStatuses[connectionId];
+
+            // If the remote is on a different host's JLE stream, cannot trust their JLE# and, by extension, their NCF
+            if (receivedHostId != GetCurrentHostId())
+                return;
+
+          //  Debug.Assert(!network.LocalPeerInfo.IsServer || receivedJLE <= latestJoinLeaveEvent); // <- If we're the server, clients should not be getting ahead!
+
+            if (receivedJLE == latestJoinLeaveEvent) // <- sync with join/leave (clients can move NCF backwards on join/leave)
+            {
+                if (remoteStatus.ncf < receivedNCF) // <- updates are received out-of-order, so skip old data
+                {
+                    remoteStatus.ncf = receivedNCF;
+
+                    // At this point, the received hash is on the same branch of consistent frames (host and JLE), so we can test it
+                    // Not bothering with old (out-of-order) hashes, as the relevant NCF may have been cleaned up at this point, and we'd have to test for that.
+                   // ReceiveRemoteHash(receivedNCF, receivedHash, receivedJLE, receivedHostId, remotePeer.PeerInfo.ConnectionId);
+                    ReceiveRemoteHash(receivedNCF, receivedHash, receivedJLE, receivedHostId,1);
+                }
+            }
+
+            if (remoteStatus.jle < receivedJLE) // <- updates are received out-of-order, so skip old data
+                remoteStatus.jle = receivedJLE;
+
+
+            // Also keep SNCF updated
+           /* if (remotePeer.PeerInfo.IsServer)
+            {
+                if (receivedJLE == latestJoinLeaveEvent)
+                    if (serverNewestConsistentFrame < receivedNCF)
+                        serverNewestConsistentFrame = receivedNCF;
+            }*/
+        }
+        /// <summary>Clients can move their NCF back as far as the server's NCF on a join/leave event. Pair this call with an increment to <see cref="latestJoinLeaveEvent"/></summary>
+        void ResetRemoteNCFs(int frame)
+        {
+            Debug.Assert(frame >= serverNewestConsistentFrame);
+            foreach (var remoteStatus in remoteStatuses.Values)
+            {
+                if (remoteStatus.ncf > frame)
+                    remoteStatus.ncf = frame;
+            }
+        }
+
+        /// <summary>Host migrations can undo future JLEs, sending the JLE# backwards. This, in turn, will reset the NCF.</summary>
+        void ResetRemoteJLEsAndNCFs(int jle, int frame)
+        {
+            foreach (var remoteStatus in remoteStatuses.Values)
+            {
+                if (remoteStatus.jle > jle)
+                {
+                    remoteStatus.jle = jle;
+
+                    // TODO: I need to sit down and have a proper think about this frame resetting behaviour
+                    //       (I think resetting to the SNCF at host migration time is required and will work. Need to prove it.)
+                    if (remoteStatus.ncf > frame)
+                        remoteStatus.ncf = frame;
+                }
+            }
+        }
+        /// <summary>Backstop remote values that block clean-up</summary>
+        void CheckRemoteNCFAndJLEBackstop()
+        {
+            foreach (var rsEntry in remoteStatuses)
+            {
+                if (rsEntry.Value.ncf < CurrentFrame - RemoteNCFBackstop || rsEntry.Value.jle < latestJoinLeaveEvent - RemoteJLEBackstop)
+                    HitRemoteNFCOrJLEBackstopFor(rsEntry.Key);
+            }
+
+            foreach (var jle in joinLeaveEvents)
+            {
+                if (jle.frame < CurrentFrame - RemoteJLEKeepFramesBackstop) // Buffered Join/Leave event is keeping too many frames buffered
+                {
+                    foreach (var rsEntry in remoteStatuses) // Remove those responsible for keeping the JLE buffered
+                        if (rsEntry.Value.jle <= jle.eventId)
+                            HitRemoteNFCOrJLEBackstopFor(rsEntry.Key);
+                }
+            }
+        }
+
+        void HitRemoteNFCOrJLEBackstopFor(int connectionId)
+        {
+           /* foreach (RemotePeer remotePeer in network.RemotePeers)
+            {
+                if (remotePeer.PeerInfo.ConnectionId == connectionId)
+                {
+                    if (remotePeer.IsConnected) // Prevent log flood
+                    {
+                        network.Log("Hit remote NCF/JLE backstop for " + remotePeer.PeerInfo);
+                        network.NetworkDataError(remotePeer, null);
+                    }
+                }
+            }*/
+        }
+
+        #endregion
+
+
+        #region Online State Buffer Replication
+
+        /// <summary>Write the online state buffer for a given consistent frame onwards, as well as input buffer fix-ups for any "offline" events.</summary>
+        /// <remarks>Any input indices online before the consistent frame have their online state clamped to the consistent frame.</remarks>
+        void WriteOnlineStateBuffer( int consistentFrame)
+        {
+            for (int b = 0; b < onlineStateBuffers.Length; b++)
+            {
+                int lastJoinFrame = -1;
+                OnlineState onlineState;
+                int i;
+
+                // Find and write any join entries in the buffer before or at the consistency point
+                int frame = onlineStateBuffers[b].TryGetLastBeforeOrAtFrame(consistentFrame, out onlineState, out i);
+                if (i >= 0 && onlineState.Online)
+                {
+                    // Clamp written entries to the consistentcy point (so that written input fix-ups for leaves work)
+                   /* message.Write(lastJoinFrame = consistentFrame);
+                    message.Write(onlineState.JoiningPlayerName);
+                    message.WriteByteArray(onlineState.JoiningPlayerData);*/
+                }
+
+                for (++i; i < onlineStateBuffers[b].Count; i++)
+                {
+                 //   WriteOnlineStateRecursiveHelper(b, onlineStateBuffers[b].Keys[i], onlineStateBuffers[b].Values[i], message, ref lastJoinFrame);
+                    WriteOnlineStateRecursiveHelper(b, onlineStateBuffers[b].Keys[i], onlineStateBuffers[b].Values[i], ref lastJoinFrame);
+                }
+
+                // Write terminator:
+                //message.Write((Int32)(-1));
+            }
+        }
+
+        void WriteOnlineStateRecursiveHelper(int inputIndex, int frame, OnlineState onlineState, ref int lastJoinFrame)
+        {
+            if (onlineState.PreviousThisFrame != null)
+                WriteOnlineStateRecursiveHelper(inputIndex, frame, onlineState.PreviousThisFrame, ref lastJoinFrame);
+          //  WriteOnlineStateRecursiveHelper(inputIndex, frame, onlineState.PreviousThisFrame, message, ref lastJoinFrame);
+
+            Debug.Assert(lastJoinFrame != -1 || onlineState.Online); // First written entry is always a join
+
+            //message.Write(frame);
+            if (onlineState.Online)
+            {
+              //  message.Write(onlineState.JoiningPlayerName);
+              //  message.WriteByteArray(onlineState.JoiningPlayerData);
+                lastJoinFrame = frame;
+            }
+            else
+            {
+                //    WriteInputRLE(inputBuffers[inputIndex], message, lastJoinFrame, frame - lastJoinFrame);
+                WriteInputRLE(inputBuffers[inputIndex], lastJoinFrame, frame - lastJoinFrame);
+            }
+        }
+
+
+        void ReceiveOnlineStateBuffer( int consistentFrame)
+        {
+            for (int b = 0; b < onlineStateBuffers.Length; b++)
+            {
+                bool join = true; // This alternates, always starting with a join
+                int lastJoinFrame = -1;
+
+                while (true)
+                {
+                    int frame = 0;
+                    string name = null;
+                    byte[] data = null;
+                    try
+                    {
+                        //  frame = message.ReadInt32();
+                        frame = 1;
+                        if (frame == -1)
+                            break; // Terminator
+
+                        if (join)
+                        {
+                            /*  name = message.ReadString().FilterName();
+                              data = message.ReadByteArray();*/
+                            name = "name"; 
+                            data = new byte[0]; 
+                        }
+                    }
+                    catch (Exception e) { Debug.LogError("Bad online state buffer"); }
+
+                    // First entry can be at the consistency point, remaining entries must be after the consistency point
+                    if (lastJoinFrame == -1)
+                    {
+                        if (frame < consistentFrame)
+                            Debug.LogError("Invalid online state buffer initial frame");
+                    }
+                    else
+                    {
+                        if (frame <= consistentFrame)
+                            Debug.LogError("Invalid online state buffer frame");
+                    }
+
+                    AppendOnlineStateChange(0, b, frame, name, data);
+
+                    if (join)
+                    {
+                        lastJoinFrame = frame;
+                    }
+                    else // leave
+                    {
+                        ReceiveInputRLEKnownLength(inputBuffers[b], lastJoinFrame, frame);
+                    }
+
+                    join = !join;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Input Receive/Write RLE
+
+        const int rleBits = 6;
+        const int rleMaxCount = (1 << rleBits) - 1;
+
+
+        /// <param name="inputBuffer">The input buffer to read into, or null to ignore the read data (seek through it)</param>
+        /// <param name="endFrame">The frame following the final frame written.</param>
+        void ReceiveInputRLE(InputBuffer inputBuffer, int startFrame, out int endFrame)
+        {
+            endFrame = startFrame;
+
+            while (true)
+            {
+                int count = 0;
+                InputState inputState = InputState.Input0;
+                try
+                {
+                    //   count = (int)message.ReadUInt32(rleBits);
+                    count = 1;
+                    if (count == 0) // Terminator
+                        return;
+                 //   inputState = message.ReadInputState(inputBitsUsed);
+                }
+                catch (Exception e) { Debug.LogError("Bad input message (RLE)");  }
+
+                if (inputBuffer != null)
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        ApplyInput(inputBuffer, endFrame + i, inputState);
+                    }
+                }
+
+                endFrame += count;
+            }
+        }
+
+
+        void ReceiveInputRLEKnownLength(InputBuffer inputBuffer, int startFrame, int endFrame)
+        {
+            int actualEndFrame;
+            ReceiveInputRLE(inputBuffer, startFrame, out actualEndFrame);
+
+            if (actualEndFrame != endFrame)
+                Debug.LogError("RLE input length mismatch");
+        }
+
+
+
+        void WriteInputRLE(InputBuffer inputBuffer, int startFrame, int count)
+        {
+            Debug.Assert(count >= 0);
+
+            if (count == 0) // Special case
+                goto writeTerminator;
+
+            int startIndex = inputBuffer.Keys.IndexOf(startFrame);
+
+            // Expect to have contiguous set of inputs to write out.
+            Debug.Assert(startIndex != -1);
+            Debug.Assert(startIndex + count <= inputBuffer.Count); // (still might not be contiguous)
+
+            int currentRunLength = 1;
+            InputState currentInputState = inputBuffer.Values[startIndex];
+
+            for (int i = 1; i < count; i++)
+            {
+                Debug.Assert(inputBuffer.Keys[startIndex + i - 1] + 1 == inputBuffer.Keys[startIndex + i]); // check input frames are contiguous
+                Debug.Assert(currentRunLength > 0 && currentRunLength <= rleMaxCount); // check RLE range calculation
+
+                InputState nextInputState = inputBuffer.Values[startIndex + i];
+
+                if (currentRunLength == rleMaxCount || currentInputState != nextInputState)
+                {
+                  //  message.Write((uint)currentRunLength, rleBits);
+                 //   message.WriteInputState(currentInputState, inputBitsUsed);
+
+                    currentRunLength = 0;
+                    currentInputState = nextInputState;
+                }
+
+                currentRunLength++;
+            }
+
+            Debug.Assert(currentRunLength > 0 && currentRunLength <= rleMaxCount); // check RLE range calculation
+        //    message.Write((uint)currentRunLength, rleBits);
+         //   message.WriteInputState(currentInputState, inputBitsUsed);
+
+            writeTerminator:
+                Debug.Log("writeTerminator");
+         //   message.Write((uint)0, rleBits);
+        }
+
+
+        #endregion
+
+        #region Input Buffers
+
+        InputBuffer[] inputBuffers;
+
+        void SetupInputBuffers()
+        {
+            inputBuffers = new InputBuffer[InputAssignmentExtensions.MaxPlayerInputAssignments];
+            for (int i = 0; i < inputBuffers.Length; i++)
+            {
+                inputBuffers[i] = new InputBuffer();
+            }
+        }
+
+        InputBuffer LocalInputBuffer
+        {
+            get
+            {
+                int localInputAssignment = 1;
+               // int localInputAssignment = network.LocalPeerInfo.InputAssignment.GetFirstAssignedPlayerIndex();
+                return inputBuffers[localInputAssignment];
+            }
+        }
+
+
+        MultiInputState GetInputForFrame(int frame)
+        {
+            Debug.Assert(inputBuffers.Length == InputAssignmentExtensions.MaxPlayerInputAssignments);
+
+            MultiInputState input = new MultiInputState();
+            for (int i = 0; i < inputBuffers.Length; i++)
+            {
+                // If there is no input on a given frame, predict it as equal to the latest input at that frame
+                input[i] = inputBuffers[i].GetLastBeforeOrAtFrameOrDefault(frame);
+            }
+
+            return input;
+        }
+
+
+        void ApplyInput(InputBuffer inputBuffer, int inputFrame, InputState inputState)
+        {
+            // NOTE: Lidgren will merrily give duplicates of messages sent as ReliableUnordered! (This is a bug in Lidgren)
+            //       So we need to ignore them if they come through...
+
+            if (inputFrame <= newestConsistentFrame) // Already have/had this frame (and it could have been cleaned up)
+                return;
+
+            // If we're getting a duplicate frame, check that it's not changing value (which would be *very* weird)
+            // (This is a protocol error, but there's little that can be done about it from here - can't tell who's value is wrong!)
+            Debug.Assert(!(inputBuffer.ContainsKey(inputFrame) && inputBuffer[inputFrame] != inputState));
+
+            // Note that the following will work, even if the frame is already in the buffer (received a duplicate)
+            InputState previousLogicalInputState = inputBuffer.GetLastBeforeOrAtFrameOrDefault(inputFrame);
+            inputBuffer[inputFrame] = inputState;
+
+            if (inputState != previousLogicalInputState)
+                MarkPredictionDirty(inputFrame);
+        }
+
+        #endregion
+
+        #region Prediction
+
+        int predictionDirtyFrame = Int32.MaxValue;
+
+        /// <summary>
+        /// Indiciate that the given frame was modified since it was last predicted.
+        /// Will cause the prior snapshot to be loaded as the starting point for prediction.
+        /// </summary>
+        void MarkPredictionDirty(int dirtyAtFrame)
+        {
+            Debug.Assert(dirtyAtFrame > newestConsistentFrame);
+            if (dirtyAtFrame < predictionDirtyFrame)
+                predictionDirtyFrame = dirtyAtFrame;
+        }
+
+
+        int? clientStartupSnapshotLoaded;
+
+        void DoPrediction()
+        {
+            if (predictionDirtyFrame > CurrentSimulationFrame)
+                return; // Nothing to predict
+
+            Debug.Assert(predictionDirtyFrame > newestConsistentFrame);
+
+            if (clientStartupSnapshotLoaded.HasValue)
+            {
+                Debug.Assert(clientStartupSnapshotLoaded.Value == predictionDirtyFrame - 1);
+            }
+            else
+            {
+                game.BeforePrediction();
+                //TODO 反序列化
+             //   game.Deserialize(snapshotBuffer[predictionDirtyFrame - 1]);
+            }
+
+
+            // Prediction loop:
+            for (int frame = predictionDirtyFrame; frame <= CurrentSimulationFrame; frame++)
+            {
+                game.BeforeRollbackAwareFrame(frame, clientStartupSnapshotLoaded.HasValue);
+                RunGameJoinLeaveEvents(frame, false);
+                game.Update(GetInputForFrame(frame), false);
+                game.AfterRollbackAwareFrame();
+
+                // Save the state that we predicted (so we can reload and predict from it later)
+                // TODO: Pool the snapshot objects that we are replacing here!
+                //反序列化
+              //  snapshotBuffer[frame] = game.Serialize();
+                hashBuffer.Remove(frame);
+            }
+
+
+            if (clientStartupSnapshotLoaded.HasValue)
+            {
+                clientStartupSnapshotLoaded = null;
+            }
+            else
+            {
+                game.AfterPrediction();
+            }
+
+            // Mark prediction clean:
+            predictionDirtyFrame = Int32.MaxValue;
+        }
+
+        #endregion
+
+        #region Client Timer Synchronisation
+
+        public const int FramesPerSecond = 60;
+        public static readonly TimeSpan FrameTime = new TimeSpan(166667); // 60 FPS
+
+
+        PacketTimeTracker packetTimeTracker;
+        SynchronisedClock synchronisedClock;
+
+        void ClientSetupTiming(int serverCurrentFrame)
+        {
+            packetTimeTracker = new PacketTimeTracker();
+
+            // Get initial values for timing
+            // TODO: We should wait until we have more timing data before starting the game running
+            //   ClientReceiveTimingPacket(serverCurrentFrame, messageForTiming);
+            ClientReceiveTimingPacket(serverCurrentFrame);
+            //不知道是否正确
+            packetTimeTracker.Update(Time.time);
+
+            CurrentFrame = Math.Max(serverCurrentFrame, (int)Math.Round(packetTimeTracker.DesiredCurrentFrame));
+            CurrentSimulationFrame = Math.Max(serverCurrentFrame, CurrentFrame - LocalFrameDelay);
+
+            Debug.Log("Client starting time at input frame = " + CurrentFrame + ", simulation frame = " + CurrentSimulationFrame);
+
+            synchronisedClock = new SynchronisedClock(packetTimeTracker);
+        }
+
+
+        void ClientReceiveTimingPacket(int remoteCurrentFrame)
+        {
+            //计算RTT
+            // double rtt = messageForTiming.SenderConnection.AverageRoundtripTime;
+            double rtt = 0;
+            if (rtt < 0)
+            {
+                // Lidgren sets the RTT to -1 until it has enough data to initialise it. So if we get here, we don't have a RTT estimate for the server yet.
+                // A well-behaved server should hold-off making us app-connected until we have told it we have its RTT with P2PClientMessage.RTTInitialised.
+                // So this should normally never happen.
+                //
+                // BUT: During host migration, it's possible for a peer to become server who we don't have an RTT for (they freshly connected).
+                // Ideally we'd like to disregard these timing values (continuing to run on our own clock for a while should be more accurate).
+                // But we have to clock-sync eventually (even if it has the wrong delay). So rather than writing the complicated code to make this work,
+                // just guess a value and depend on the clock-sync code to smooth it out.
+
+                rtt = 0.05; // <- Also good if the server misbehaves in production. Don't really want RTT=-1 making it into the timer.
+
+                // If the server was *not* a host-migration (and checking for connection ID 0 is a lazy, inaccurate way to tell),
+                // then it's a programmer error (or misbehaved server):
+                Debug.Assert(GetCurrentHostId() != 0);
+            }
+            double oneWayLatency = rtt / 2.0;
+
+            //TODO 接收时间-单方向延时
+          //  double estimatedLocalTimeOfSend = messageForTiming.ReceiveTime - oneWayLatency;
+            double estimatedLocalTimeOfSend = 0 - oneWayLatency;
+            packetTimeTracker.ReceivePacket(remoteCurrentFrame, estimatedLocalTimeOfSend);
+        }
+
+
+        void ClientUpdateTiming(TimeSpan elapsedTime)
+        {
+         //   Debug.Assert(network.IsApplicationConnected);
+          ///  Debug.Assert(!network.IsServer);
+
+            packetTimeTracker.Update(Time.time);
+            synchronisedClock.Update(elapsedTime.TotalSeconds);
+        }
+
+        #endregion
+
     }
 }
