@@ -17,3 +17,77 @@ message FrameMessage // IActorMessage
 	int32 Frame = 1;
 	repeated OneFrameMessage Message = 2;
 }
+
+message LocalNCFAndJLE //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int32 NewestConsistentFrame = 1;
+	int32 LatestJoinLeaveEvent = 2;
+	//int32 CurrentHostId = 3;
+	uint32 NCFSnapshot = 3;
+}
+
+message JoinEvent //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	repeated JoinLeaveEvent events = 1;
+}
+
+message JoinLeaveEvent //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int32 EventId = 1;
+	int32 ConsistentFrame = 2;
+	uint32 FrameSubConsistemtFrame = 3;
+	int32 InputIndex = 4;
+	int32 IfJoiningPlayerName = 5;
+	string JoiningPlayerName = 6;
+	bytes JoiningPlayerData = 7;
+}
+
+message OnlineState //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int32 LastJoinFrame = 1;
+	repeated int32 ConsistentFrame = 2;
+	repeated string JoinPlayerName = 3;
+	repeated bytes JoinPlayerData = 4;
+	int32 Terminator = 5;
+}
+
+message InputRLE //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	repeated int32 CurrentRunLength = 1;
+	repeated InputState CurrentInputState = 2;
+	int32 Terminator = 3;
+}
+
+message InputCoalesced //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	uint32 FirstInputCount = 1;
+	InputState FirstInput = 2;
+	InputState LastInput = 3;
+}
+
+message InputHeader //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	InputFormat inputFormat = 1;
+	int32 StartFrame = 2;
+}
+
+message InputPredictionWarmValues //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	repeated InputState inputstate = 1;
+}

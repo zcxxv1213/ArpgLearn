@@ -5,14 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using ETModel;
 
 namespace RollBack
 {
-    public class RollbackDriver
+    public class RollbackDriver:ETModel.Component
     {
         readonly IGameState game;
         readonly IAcceptsDesyncDumps dumpTarget;
         readonly int inputBitsUsed;
+        ETModel.Component mNetCompoonent = ETModel.Game.Scene.GetComponent<NetworkComponent>();
+
         public RollbackDriver(IGameState game, IAcceptsDesyncDumps dumpTarget, int inputBitsUsed)
         {
             this.game = game;
