@@ -64,7 +64,7 @@ message InputRLE //IActorMessage
 	int32 RpcId = 90;
 	int64 ActorId = 93;
 	repeated int32 CurrentRunLength = 1;
-	repeated InputState CurrentInputState = 2;
+	repeated bytes CurrentInputState = 2;
 	int32 Terminator = 3;
 }
 
@@ -73,15 +73,15 @@ message InputCoalesced //IActorMessage
 	int32 RpcId = 90;
 	int64 ActorId = 93;
 	uint32 FirstInputCount = 1;
-	InputState FirstInput = 2;
-	InputState LastInput = 3;
+	bytes FirstInput = 2;
+	bytes LastInput = 3;
 }
 
 message InputHeader //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
-	InputFormat inputFormat = 1;
+	bytes InputFormat = 1;
 	int32 StartFrame = 2;
 }
 
@@ -89,5 +89,5 @@ message InputPredictionWarmValues //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
-	repeated InputState inputstate = 1;
+	repeated bytes Inputstate = 1;
 }
