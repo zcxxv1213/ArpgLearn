@@ -11,6 +11,7 @@ using Assets.Scripts.Com.Manager;
 using ETModel;
 using System.Net;
 using System.Threading;
+using Google.Protobuf;
 
 public class Main : MonoBehaviour
 {
@@ -49,6 +50,7 @@ public class Main : MonoBehaviour
         
         
     }
+
     void Start()
     {
         Init();

@@ -17,6 +17,25 @@ message FrameMessage // IActorMessage
 	int32 Frame = 1;
 	repeated OneFrameMessage Message = 2;
 }
+message InitUnitInfo
+{
+	int64 Id = 1;
+	bytes MoveComponentBytes = 2;
+}
+
+message UnitInitMsg // IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+
+	repeated InitUnitInfo units = 1;
+}
+
+message ClientInitComplete //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+}
 
 message LocalNCFAndJLE //IActorMessage
 {

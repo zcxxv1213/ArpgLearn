@@ -24,7 +24,7 @@ namespace Assets.Scripts.SyncFrameWork.Factory
           //  unit.GameObject.transform.SetParent(parent.transform, false);
          //   unit.AddComponent<AnimatorComponent>();
             unit.AddComponent<MoveComponent>();
-
+            unit.AddComponent<FrameMoveComponent>();
             unitComponent.Add(unit);
             return unit;
         }
