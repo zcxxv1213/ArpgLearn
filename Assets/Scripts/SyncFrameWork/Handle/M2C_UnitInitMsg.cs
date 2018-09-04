@@ -24,8 +24,8 @@ namespace ETModel
                 else
                 {
                     Unit u = (unitComponent.Get(message.Units[i].Id));
-                    FrameMoveData d = ProtobufHelper.FromBytes(typeof(FrameMoveData), message.Units[i].MoveComponentBytes.ToByteArray(), 0, message.Units[i].MoveComponentBytes.ToByteArray().Length) as FrameMoveData;
-                    Debug.Log(d.posX);
+                    u.GetComponent<FrameMoveComponent>().moveData.posX = message.Units[i].MoveComponentBytes.PosX;
+                    u.GetComponent<FrameMoveComponent>().moveData.posY = message.Units[i].MoveComponentBytes.PosY;
                 }
             }
         }

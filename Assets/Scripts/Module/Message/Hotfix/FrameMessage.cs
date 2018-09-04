@@ -213,6 +213,71 @@ namespace ETModel {
 
   }
 
+  public partial class MoveInfo : pb::IMessage {
+    private static readonly pb::MessageParser<MoveInfo> _parser = new pb::MessageParser<MoveInfo>(() => new MoveInfo());
+    public static pb::MessageParser<MoveInfo> Parser { get { return _parser; } }
+
+    private int posX_;
+    public int PosX {
+      get { return posX_; }
+      set {
+        posX_ = value;
+      }
+    }
+
+    private int posY_;
+    public int PosY {
+      get { return posY_; }
+      set {
+        posY_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (PosX != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(PosX);
+      }
+      if (PosY != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(PosY);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (PosX != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PosX);
+      }
+      if (PosY != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PosY);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      posX_ = 0;
+      posY_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            PosX = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            PosY = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public partial class InitUnitInfo : pb::IMessage {
     private static readonly pb::MessageParser<InitUnitInfo> _parser = new pb::MessageParser<InitUnitInfo>(() => new InitUnitInfo());
     public static pb::MessageParser<InitUnitInfo> Parser { get { return _parser; } }
@@ -225,11 +290,11 @@ namespace ETModel {
       }
     }
 
-    private pb::ByteString moveComponentBytes_ = pb::ByteString.Empty;
-    public pb::ByteString MoveComponentBytes {
+    private global::ETModel.MoveInfo moveComponentBytes_;
+    public global::ETModel.MoveInfo MoveComponentBytes {
       get { return moveComponentBytes_; }
       set {
-        moveComponentBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        moveComponentBytes_ = value;
       }
     }
 
@@ -238,9 +303,9 @@ namespace ETModel {
         output.WriteRawTag(8);
         output.WriteInt64(Id);
       }
-      if (MoveComponentBytes.Length != 0) {
+      if (moveComponentBytes_ != null) {
         output.WriteRawTag(18);
-        output.WriteBytes(MoveComponentBytes);
+        output.WriteMessage(MoveComponentBytes);
       }
     }
 
@@ -249,8 +314,8 @@ namespace ETModel {
       if (Id != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Id);
       }
-      if (MoveComponentBytes.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(MoveComponentBytes);
+      if (moveComponentBytes_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(MoveComponentBytes);
       }
       return size;
     }
@@ -268,7 +333,10 @@ namespace ETModel {
             break;
           }
           case 18: {
-            MoveComponentBytes = input.ReadBytes();
+            if (moveComponentBytes_ == null) {
+              moveComponentBytes_ = new global::ETModel.MoveInfo();
+            }
+            input.ReadMessage(moveComponentBytes_);
             break;
           }
         }

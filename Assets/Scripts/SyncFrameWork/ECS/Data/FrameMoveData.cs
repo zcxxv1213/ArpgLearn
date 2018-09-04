@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace ETModel
 {
-    [Serializable]
     public class FrameMoveData
     {
         public Int32 posX = 0;

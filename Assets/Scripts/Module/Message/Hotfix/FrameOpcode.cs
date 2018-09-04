@@ -11,7 +11,7 @@ namespace ETModel
 	public partial class InitUnitInfo {}
 
 	[Message(FrameOpcode.UnitInitMsg)]
-	public partial class UnitInitMsg {}
+	public partial class UnitInitMsg : IActorMessage {}
 
 	[Message(FrameOpcode.ClientInitComplete)]
 	public partial class ClientInitComplete : IActorMessage {}

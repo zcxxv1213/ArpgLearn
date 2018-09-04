@@ -9,11 +9,12 @@ using UnityEngine;
 
 namespace Assets.Scripts.SyncFrameWork.Handle
 {
-    [MessageHandler(AppType.Map)]
+    [MessageHandler]
     public class M2C_CreatUnit_Handle : AMHandler<Actor_CreateUnits>
     {
         protected override async void Run(Session session, Actor_CreateUnits message)
         {
+            Debug.Log("CreatUnit");
             UnitComponent unitComponent = ETModel.Game.Scene.GetComponent<UnitComponent>();
 
             for (int i = 0; i < message.Units.Count; i++)

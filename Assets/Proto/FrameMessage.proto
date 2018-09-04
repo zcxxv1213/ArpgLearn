@@ -17,10 +17,17 @@ message FrameMessage // IActorMessage
 	int32 Frame = 1;
 	repeated OneFrameMessage Message = 2;
 }
+
+message MoveInfo
+{
+	int32 posX = 1;
+	int32 posY = 2;
+}
+
 message InitUnitInfo
 {
 	int64 Id = 1;
-	bytes MoveComponentBytes = 2;
+	MoveInfo MoveComponentBytes = 2;
 }
 
 message UnitInitMsg // IActorMessage
