@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using RollBack;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -10,7 +11,9 @@ namespace ETModel
 	
 	public sealed class Unit: Entity
 	{
-		public VInt3 IntPos;
+        public int mPlayerIndex;
+        public InputAssignment mInputAssignment { get; set; }
+        public VInt3 IntPos;
         private string mName;
 		public GameObject GameObject;
         public Vector3 Pos;
@@ -18,7 +21,10 @@ namespace ETModel
         public void Awake()
 		{
 		}
-
+        public void SetPlayerInputIndex(int i)
+        {
+            mPlayerIndex = i;
+        }
         public string name
         {
             get

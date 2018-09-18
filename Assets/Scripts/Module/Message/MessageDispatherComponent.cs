@@ -81,7 +81,6 @@ namespace ETModel
 		public void Handle(Session session, MessageInfo messageInfo)
 		{
 			List<IMHandler> actions;
-            Log.Info(messageInfo.Opcode.ToString());
 			if (!this.handlers.TryGetValue(messageInfo.Opcode, out actions))
 			{
                 //Log.Error($"消息没有处理: {messageInfo.Opcode} {JsonHelper.ToJson(messageInfo.Message)}");

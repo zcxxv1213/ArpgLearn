@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RollBack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ namespace ETModel
                 else
                 {
                     Unit u = (unitComponent.Get(message.Units[i].Id));
+                    u.mInputAssignment = (InputAssignment)message.Units[i].Info.InputAssignment;
                     u.GetComponent<FrameMoveComponent>().moveData.posX = message.Units[i].MoveComponentBytes.PosX;
                     u.GetComponent<FrameMoveComponent>().moveData.posY = message.Units[i].MoveComponentBytes.PosY;
                 }
