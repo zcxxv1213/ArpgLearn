@@ -38,6 +38,7 @@ public class Main : MonoBehaviour
         this.CreatConnect();
         SynchronizationContext.SetSynchronizationContext(unityContext);
     }
+
     async void CreatConnect()
     {
         IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 10002);

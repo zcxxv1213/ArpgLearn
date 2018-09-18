@@ -213,6 +213,71 @@ namespace ETModel {
 
   }
 
+  public partial class PeerInfo : pb::IMessage {
+    private static readonly pb::MessageParser<PeerInfo> _parser = new pb::MessageParser<PeerInfo>(() => new PeerInfo());
+    public static pb::MessageParser<PeerInfo> Parser { get { return _parser; } }
+
+    private string playerName_ = "";
+    public string PlayerName {
+      get { return playerName_; }
+      set {
+        playerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    private int inputAssignment_;
+    public int InputAssignment {
+      get { return inputAssignment_; }
+      set {
+        inputAssignment_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (PlayerName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PlayerName);
+      }
+      if (InputAssignment != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(InputAssignment);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (PlayerName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerName);
+      }
+      if (InputAssignment != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(InputAssignment);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      playerName_ = "";
+      inputAssignment_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10: {
+            PlayerName = input.ReadString();
+            break;
+          }
+          case 16: {
+            InputAssignment = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public partial class MoveInfo : pb::IMessage {
     private static readonly pb::MessageParser<MoveInfo> _parser = new pb::MessageParser<MoveInfo>(() => new MoveInfo());
     public static pb::MessageParser<MoveInfo> Parser { get { return _parser; } }
@@ -278,9 +343,9 @@ namespace ETModel {
 
   }
 
-  public partial class InitUnitInfo : pb::IMessage {
-    private static readonly pb::MessageParser<InitUnitInfo> _parser = new pb::MessageParser<InitUnitInfo>(() => new InitUnitInfo());
-    public static pb::MessageParser<InitUnitInfo> Parser { get { return _parser; } }
+  public partial class UnitSnatshot : pb::IMessage {
+    private static readonly pb::MessageParser<UnitSnatshot> _parser = new pb::MessageParser<UnitSnatshot>(() => new UnitSnatshot());
+    public static pb::MessageParser<UnitSnatshot> Parser { get { return _parser; } }
 
     private long id_;
     public long Id {
@@ -298,6 +363,22 @@ namespace ETModel {
       }
     }
 
+    private int playerIndex_;
+    public int PlayerIndex {
+      get { return playerIndex_; }
+      set {
+        playerIndex_ = value;
+      }
+    }
+
+    private global::ETModel.PeerInfo info_;
+    public global::ETModel.PeerInfo Info {
+      get { return info_; }
+      set {
+        info_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Id != 0L) {
         output.WriteRawTag(8);
@@ -306,6 +387,14 @@ namespace ETModel {
       if (moveComponentBytes_ != null) {
         output.WriteRawTag(18);
         output.WriteMessage(MoveComponentBytes);
+      }
+      if (PlayerIndex != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(PlayerIndex);
+      }
+      if (info_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Info);
       }
     }
 
@@ -317,11 +406,18 @@ namespace ETModel {
       if (moveComponentBytes_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(MoveComponentBytes);
       }
+      if (PlayerIndex != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PlayerIndex);
+      }
+      if (info_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Info);
+      }
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
       id_ = 0;
+      playerIndex_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -339,15 +435,26 @@ namespace ETModel {
             input.ReadMessage(moveComponentBytes_);
             break;
           }
+          case 24: {
+            PlayerIndex = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            if (info_ == null) {
+              info_ = new global::ETModel.PeerInfo();
+            }
+            input.ReadMessage(info_);
+            break;
+          }
         }
       }
     }
 
   }
 
-  public partial class UnitInitMsg : pb::IMessage {
-    private static readonly pb::MessageParser<UnitInitMsg> _parser = new pb::MessageParser<UnitInitMsg>(() => new UnitInitMsg());
-    public static pb::MessageParser<UnitInitMsg> Parser { get { return _parser; } }
+  public partial class UnitSnapshotMsg : pb::IMessage {
+    private static readonly pb::MessageParser<UnitSnapshotMsg> _parser = new pb::MessageParser<UnitSnapshotMsg>(() => new UnitSnapshotMsg());
+    public static pb::MessageParser<UnitSnapshotMsg> Parser { get { return _parser; } }
 
     private int rpcId_;
     public int RpcId {
@@ -365,16 +472,28 @@ namespace ETModel {
       }
     }
 
-    private static readonly pb::FieldCodec<global::ETModel.InitUnitInfo> _repeated_units_codec
-        = pb::FieldCodec.ForMessage(10, global::ETModel.InitUnitInfo.Parser);
-    private pbc::RepeatedField<global::ETModel.InitUnitInfo> units_ = new pbc::RepeatedField<global::ETModel.InitUnitInfo>();
-    public pbc::RepeatedField<global::ETModel.InitUnitInfo> Units {
+    private static readonly pb::FieldCodec<global::ETModel.UnitSnatshot> _repeated_units_codec
+        = pb::FieldCodec.ForMessage(10, global::ETModel.UnitSnatshot.Parser);
+    private pbc::RepeatedField<global::ETModel.UnitSnatshot> units_ = new pbc::RepeatedField<global::ETModel.UnitSnatshot>();
+    public pbc::RepeatedField<global::ETModel.UnitSnatshot> Units {
       get { return units_; }
       set { units_ = value; }
     }
 
+    private int frame_;
+    public int Frame {
+      get { return frame_; }
+      set {
+        frame_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       units_.WriteTo(output, _repeated_units_codec);
+      if (Frame != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Frame);
+      }
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
         output.WriteInt32(RpcId);
@@ -394,11 +513,15 @@ namespace ETModel {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
       }
       size += units_.CalculateSize(_repeated_units_codec);
+      if (Frame != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Frame);
+      }
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
       units_.Clear();
+      frame_ = 0;
       rpcId_ = 0;
       actorId_ = 0;
       uint tag;
@@ -409,6 +532,10 @@ namespace ETModel {
             break;
           case 10: {
             units_.AddEntriesFrom(input, _repeated_units_codec);
+            break;
+          }
+          case 16: {
+            Frame = input.ReadInt32();
             break;
           }
           case 720: {
@@ -476,6 +603,86 @@ namespace ETModel {
           default:
             input.SkipLastField();
             break;
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+          case 744: {
+            ActorId = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class SnapShotMessage : pb::IMessage {
+    private static readonly pb::MessageParser<SnapShotMessage> _parser = new pb::MessageParser<SnapShotMessage>(() => new SnapShotMessage());
+    public static pb::MessageParser<SnapShotMessage> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private long actorId_;
+    public long ActorId {
+      get { return actorId_; }
+      set {
+        actorId_ = value;
+      }
+    }
+
+    private static readonly pb::FieldCodec<global::ETModel.UnitSnapshotMsg> _repeated_unitMsg_codec
+        = pb::FieldCodec.ForMessage(10, global::ETModel.UnitSnapshotMsg.Parser);
+    private pbc::RepeatedField<global::ETModel.UnitSnapshotMsg> unitMsg_ = new pbc::RepeatedField<global::ETModel.UnitSnapshotMsg>();
+    public pbc::RepeatedField<global::ETModel.UnitSnapshotMsg> UnitMsg {
+      get { return unitMsg_; }
+      set { unitMsg_ = value; }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      unitMsg_.WriteTo(output, _repeated_unitMsg_codec);
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+      if (ActorId != 0L) {
+        output.WriteRawTag(232, 5);
+        output.WriteInt64(ActorId);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (ActorId != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      size += unitMsg_.CalculateSize(_repeated_unitMsg_codec);
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      unitMsg_.Clear();
+      rpcId_ = 0;
+      actorId_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10: {
+            unitMsg_.AddEntriesFrom(input, _repeated_unitMsg_codec);
+            break;
+          }
           case 720: {
             RpcId = input.ReadInt32();
             break;

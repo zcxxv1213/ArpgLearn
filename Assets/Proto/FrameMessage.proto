@@ -18,30 +18,45 @@ message FrameMessage // IActorMessage
 	repeated OneFrameMessage Message = 2;
 }
 
+message PeerInfo
+{
+	string PlayerName = 1;
+	int32 InputAssignment = 2;
+}
+
 message MoveInfo
 {
 	int32 posX = 1;
 	int32 posY = 2;
 }
 
-message InitUnitInfo
+message UnitSnatshot
 {
 	int64 Id = 1;
 	MoveInfo MoveComponentBytes = 2;
+	int32 PlayerIndex = 3;
+	PeerInfo Info = 4;
 }
 
-message UnitInitMsg // IActorMessage
+message UnitSnapshotMsg // IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
-
-	repeated InitUnitInfo units = 1;
+	repeated UnitSnatshot units = 1;
+	int32 Frame = 2;
 }
 
 message ClientInitComplete //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
+}
+
+message SnapShotMessage //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	repeated UnitSnapshotMsg UnitMsg = 1;
 }
 
 message LocalNCFAndJLE //IActorMessage

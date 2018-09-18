@@ -7,14 +7,23 @@ namespace ETModel
 	[Message(FrameOpcode.FrameMessage)]
 	public partial class FrameMessage : IActorMessage {}
 
-	[Message(FrameOpcode.InitUnitInfo)]
-	public partial class InitUnitInfo {}
+	[Message(FrameOpcode.PeerInfo)]
+	public partial class PeerInfo {}
 
-	[Message(FrameOpcode.UnitInitMsg)]
-	public partial class UnitInitMsg : IActorMessage {}
+	[Message(FrameOpcode.MoveInfo)]
+	public partial class MoveInfo {}
+
+	[Message(FrameOpcode.UnitSnatshot)]
+	public partial class UnitSnatshot {}
+
+	[Message(FrameOpcode.UnitSnapshotMsg)]
+	public partial class UnitSnapshotMsg : IActorMessage {}
 
 	[Message(FrameOpcode.ClientInitComplete)]
 	public partial class ClientInitComplete : IActorMessage {}
+
+	[Message(FrameOpcode.SnapShotMessage)]
+	public partial class SnapShotMessage : IActorMessage {}
 
 	[Message(FrameOpcode.LocalNCFAndJLE)]
 	public partial class LocalNCFAndJLE : IActorMessage {}
@@ -48,16 +57,19 @@ namespace ETModel
 	{
 		 public const ushort OneFrameMessage = 20001;
 		 public const ushort FrameMessage = 20002;
-		 public const ushort InitUnitInfo = 20003;
-		 public const ushort UnitInitMsg = 20004;
-		 public const ushort ClientInitComplete = 20005;
-		 public const ushort LocalNCFAndJLE = 20006;
-		 public const ushort JoinEvent = 20007;
-		 public const ushort JoinLeaveEvent = 20008;
-		 public const ushort OnlineState = 20009;
-		 public const ushort InputRLE = 20010;
-		 public const ushort InputCoalesced = 20011;
-		 public const ushort InputHeader = 20012;
-		 public const ushort InputPredictionWarmValues = 20013;
+		 public const ushort PeerInfo = 20003;
+		 public const ushort MoveInfo = 20004;
+		 public const ushort UnitSnatshot = 20005;
+		 public const ushort UnitSnapshotMsg = 20006;
+		 public const ushort ClientInitComplete = 20007;
+		 public const ushort SnapShotMessage = 20008;
+		 public const ushort LocalNCFAndJLE = 20009;
+		 public const ushort JoinEvent = 20010;
+		 public const ushort JoinLeaveEvent = 20011;
+		 public const ushort OnlineState = 20012;
+		 public const ushort InputRLE = 20013;
+		 public const ushort InputCoalesced = 20014;
+		 public const ushort InputHeader = 20015;
+		 public const ushort InputPredictionWarmValues = 20016;
 	}
 }

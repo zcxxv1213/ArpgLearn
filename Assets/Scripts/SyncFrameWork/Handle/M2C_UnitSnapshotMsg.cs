@@ -8,9 +8,9 @@ using UnityEngine;
 namespace ETModel
 {
     [MessageHandler]
-    public class M2C_UnitInitMsg : AMHandler<UnitInitMsg>
+    public class M2C_UnitSnapshotMsg : AMHandler<UnitSnapshotMsg>
     {
-        protected override void Run(Session session, UnitInitMsg message)
+        protected override void Run(Session session, UnitSnapshotMsg message)
         {
             Debug.Log("Handle");
             UnitComponent unitComponent = ETModel.Game.Scene.GetComponent<UnitComponent>();
