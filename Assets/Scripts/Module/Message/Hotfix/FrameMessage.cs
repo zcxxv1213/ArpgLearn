@@ -1535,6 +1535,14 @@ namespace ETModel {
       }
     }
 
+    private int inputAssignment_;
+    public int InputAssignment {
+      get { return inputAssignment_; }
+      set {
+        inputAssignment_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (InputFormat.Length != 0) {
         output.WriteRawTag(10);
@@ -1543,6 +1551,10 @@ namespace ETModel {
       if (StartFrame != 0) {
         output.WriteRawTag(16);
         output.WriteInt32(StartFrame);
+      }
+      if (InputAssignment != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(InputAssignment);
       }
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
@@ -1568,11 +1580,15 @@ namespace ETModel {
       if (StartFrame != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(StartFrame);
       }
+      if (InputAssignment != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(InputAssignment);
+      }
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
       startFrame_ = 0;
+      inputAssignment_ = 0;
       rpcId_ = 0;
       actorId_ = 0;
       uint tag;
@@ -1587,6 +1603,10 @@ namespace ETModel {
           }
           case 16: {
             StartFrame = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            InputAssignment = input.ReadInt32();
             break;
           }
           case 720: {
@@ -1667,6 +1687,319 @@ namespace ETModel {
             break;
           case 10: {
             inputstate_.AddEntriesFrom(input, _repeated_inputstate_codec);
+            break;
+          }
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+          case 744: {
+            ActorId = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class C2SOnlyInputState : pb::IMessage {
+    private static readonly pb::MessageParser<C2SOnlyInputState> _parser = new pb::MessageParser<C2SOnlyInputState>(() => new C2SOnlyInputState());
+    public static pb::MessageParser<C2SOnlyInputState> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private long actorId_;
+    public long ActorId {
+      get { return actorId_; }
+      set {
+        actorId_ = value;
+      }
+    }
+
+    private int inputstate_;
+    public int Inputstate {
+      get { return inputstate_; }
+      set {
+        inputstate_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Inputstate != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Inputstate);
+      }
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+      if (ActorId != 0L) {
+        output.WriteRawTag(232, 5);
+        output.WriteInt64(ActorId);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (ActorId != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      if (Inputstate != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Inputstate);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      inputstate_ = 0;
+      rpcId_ = 0;
+      actorId_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            Inputstate = input.ReadInt32();
+            break;
+          }
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+          case 744: {
+            ActorId = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class S2CCoalesceInput : pb::IMessage {
+    private static readonly pb::MessageParser<S2CCoalesceInput> _parser = new pb::MessageParser<S2CCoalesceInput>(() => new S2CCoalesceInput());
+    public static pb::MessageParser<S2CCoalesceInput> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private long actorId_;
+    public long ActorId {
+      get { return actorId_; }
+      set {
+        actorId_ = value;
+      }
+    }
+
+    private int inputFormat_;
+    /// <summary>
+    ///0为false 1为true
+    /// </summary>
+    public int InputFormat {
+      get { return inputFormat_; }
+      set {
+        inputFormat_ = value;
+      }
+    }
+
+    private int startFrame_;
+    public int StartFrame {
+      get { return startFrame_; }
+      set {
+        startFrame_ = value;
+      }
+    }
+
+    private uint firstInputCount_;
+    public uint FirstInputCount {
+      get { return firstInputCount_; }
+      set {
+        firstInputCount_ = value;
+      }
+    }
+
+    private int firstInputstateValue_;
+    public int FirstInputstateValue {
+      get { return firstInputstateValue_; }
+      set {
+        firstInputstateValue_ = value;
+      }
+    }
+
+    private int lastInputstateValue_;
+    public int LastInputstateValue {
+      get { return lastInputstateValue_; }
+      set {
+        lastInputstateValue_ = value;
+      }
+    }
+
+    private int newestConsistentFrame_;
+    public int NewestConsistentFrame {
+      get { return newestConsistentFrame_; }
+      set {
+        newestConsistentFrame_ = value;
+      }
+    }
+
+    private int latestJoinLeaveEvent_;
+    public int LatestJoinLeaveEvent {
+      get { return latestJoinLeaveEvent_; }
+      set {
+        latestJoinLeaveEvent_ = value;
+      }
+    }
+
+    private uint nCFSnapshot_;
+    public uint NCFSnapshot {
+      get { return nCFSnapshot_; }
+      set {
+        nCFSnapshot_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (InputFormat != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(InputFormat);
+      }
+      if (StartFrame != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(StartFrame);
+      }
+      if (FirstInputCount != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(FirstInputCount);
+      }
+      if (FirstInputstateValue != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(FirstInputstateValue);
+      }
+      if (LastInputstateValue != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(LastInputstateValue);
+      }
+      if (NewestConsistentFrame != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(NewestConsistentFrame);
+      }
+      if (LatestJoinLeaveEvent != 0) {
+        output.WriteRawTag(56);
+        output.WriteInt32(LatestJoinLeaveEvent);
+      }
+      if (NCFSnapshot != 0) {
+        output.WriteRawTag(64);
+        output.WriteUInt32(NCFSnapshot);
+      }
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+      if (ActorId != 0L) {
+        output.WriteRawTag(232, 5);
+        output.WriteInt64(ActorId);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (ActorId != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      if (InputFormat != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(InputFormat);
+      }
+      if (StartFrame != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(StartFrame);
+      }
+      if (FirstInputCount != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(FirstInputCount);
+      }
+      if (FirstInputstateValue != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(FirstInputstateValue);
+      }
+      if (LastInputstateValue != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(LastInputstateValue);
+      }
+      if (NewestConsistentFrame != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(NewestConsistentFrame);
+      }
+      if (LatestJoinLeaveEvent != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(LatestJoinLeaveEvent);
+      }
+      if (NCFSnapshot != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(NCFSnapshot);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      inputFormat_ = 0;
+      startFrame_ = 0;
+      firstInputCount_ = 0;
+      firstInputstateValue_ = 0;
+      lastInputstateValue_ = 0;
+      newestConsistentFrame_ = 0;
+      latestJoinLeaveEvent_ = 0;
+      nCFSnapshot_ = 0;
+      rpcId_ = 0;
+      actorId_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            InputFormat = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            StartFrame = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            FirstInputCount = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            FirstInputstateValue = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            LastInputstateValue = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            NewestConsistentFrame = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            LatestJoinLeaveEvent = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            NCFSnapshot = input.ReadUInt32();
             break;
           }
           case 720: {

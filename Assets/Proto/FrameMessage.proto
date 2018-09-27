@@ -124,6 +124,7 @@ message InputHeader //IActorMessage
 	int64 ActorId = 93;
 	bytes InputFormat = 1;
 	int32 StartFrame = 2;
+	int32 InputAssignment = 3;
 }
 
 message InputPredictionWarmValues //IActorMessage
@@ -131,4 +132,25 @@ message InputPredictionWarmValues //IActorMessage
 	int32 RpcId = 90;
 	int64 ActorId = 93;
 	repeated bytes Inputstate = 1;
+}
+
+message C2SOnlyInputState //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int32 Inputstate = 1;
+}
+
+message S2CCoalesceInput //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int32 InputFormat = 1; //0为false 1为true
+	int32 StartFrame = 2;
+	uint32 FirstInputCount = 3;
+	int32 FirstInputstateValue = 4;
+	int32 LastInputstateValue = 5;
+	int32 NewestConsistentFrame = 6;
+	int32 LatestJoinLeaveEvent = 7;
+	uint32 NCFSnapshot = 8;
 }

@@ -50,6 +50,12 @@ namespace ETModel
 	[Message(FrameOpcode.InputPredictionWarmValues)]
 	public partial class InputPredictionWarmValues : IActorMessage {}
 
+	[Message(FrameOpcode.C2SOnlyInputState)]
+	public partial class C2SOnlyInputState : IActorMessage {}
+
+	[Message(FrameOpcode.S2CCoalesceInput)]
+	public partial class S2CCoalesceInput : IActorMessage {}
+
 }
 namespace ETModel
 {
@@ -71,5 +77,7 @@ namespace ETModel
 		 public const ushort InputCoalesced = 20014;
 		 public const ushort InputHeader = 20015;
 		 public const ushort InputPredictionWarmValues = 20016;
+		 public const ushort C2SOnlyInputState = 20017;
+		 public const ushort S2CCoalesceInput = 20018;
 	}
 }
