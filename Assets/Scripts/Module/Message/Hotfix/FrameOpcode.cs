@@ -38,12 +38,6 @@ namespace ETModel
 	[Message(FrameOpcode.OnlineState)]
 	public partial class OnlineState : IActorMessage {}
 
-	[Message(FrameOpcode.InputRLE)]
-	public partial class InputRLE : IActorMessage {}
-
-	[Message(FrameOpcode.InputCoalesced)]
-	public partial class InputCoalesced : IActorMessage {}
-
 	[Message(FrameOpcode.InputHeader)]
 	public partial class InputHeader : IActorMessage {}
 
@@ -52,6 +46,21 @@ namespace ETModel
 
 	[Message(FrameOpcode.C2SOnlyInputState)]
 	public partial class C2SOnlyInputState : IActorMessage {}
+
+	[Message(FrameOpcode.MessageInputRLE)]
+	public partial class MessageInputRLE {}
+
+	[Message(FrameOpcode.MessageInputCoalesced)]
+	public partial class MessageInputCoalesced {}
+
+	[Message(FrameOpcode.MessageReceiveRemoteNCFAndJLE)]
+	public partial class MessageReceiveRemoteNCFAndJLE {}
+
+	[Message(FrameOpcode.MessageReceiveDesyncDebug)]
+	public partial class MessageReceiveDesyncDebug {}
+
+	[Message(FrameOpcode.C2SInputMessage)]
+	public partial class C2SInputMessage : IActorMessage {}
 
 	[Message(FrameOpcode.S2CCoalesceInput)]
 	public partial class S2CCoalesceInput : IActorMessage {}
@@ -73,11 +82,14 @@ namespace ETModel
 		 public const ushort JoinEvent = 20010;
 		 public const ushort JoinLeaveEvent = 20011;
 		 public const ushort OnlineState = 20012;
-		 public const ushort InputRLE = 20013;
-		 public const ushort InputCoalesced = 20014;
-		 public const ushort InputHeader = 20015;
-		 public const ushort InputPredictionWarmValues = 20016;
-		 public const ushort C2SOnlyInputState = 20017;
-		 public const ushort S2CCoalesceInput = 20018;
+		 public const ushort InputHeader = 20013;
+		 public const ushort InputPredictionWarmValues = 20014;
+		 public const ushort C2SOnlyInputState = 20015;
+		 public const ushort MessageInputRLE = 20016;
+		 public const ushort MessageInputCoalesced = 20017;
+		 public const ushort MessageReceiveRemoteNCFAndJLE = 20018;
+		 public const ushort MessageReceiveDesyncDebug = 20019;
+		 public const ushort C2SInputMessage = 20020;
+		 public const ushort S2CCoalesceInput = 20021;
 	}
 }

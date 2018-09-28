@@ -100,24 +100,6 @@ message OnlineState //IActorMessage
 	int32 Terminator = 5;
 }
 
-message InputRLE //IActorMessage
-{
-	int32 RpcId = 90;
-	int64 ActorId = 93;
-	repeated int32 CurrentRunLength = 1;
-	repeated bytes CurrentInputState = 2;
-	int32 Terminator = 3;
-}
-
-message InputCoalesced //IActorMessage
-{
-	int32 RpcId = 90;
-	int64 ActorId = 93;
-	uint32 FirstInputCount = 1;
-	bytes FirstInput = 2;
-	bytes LastInput = 3;
-}
-
 message InputHeader //IActorMessage
 {
 	int32 RpcId = 90;
@@ -139,6 +121,47 @@ message C2SOnlyInputState //IActorMessage
 	int32 RpcId = 90;
 	int64 ActorId = 93;
 	int32 Inputstate = 1;
+}
+
+message MessageInputRLE
+{
+	int32 Count = 1;
+	int32 Inputstate = 2;	
+}
+
+message MessageInputCoalesced
+{
+	int32 FirstInputCount = 1;
+	int32 FirstInput = 2;
+	int32 LastInput = 3;
+}
+
+message MessageReceiveRemoteNCFAndJLE
+{
+	int32 receivedNCF = 1;
+	int32 receivedJLE = 2;
+	int32 receivedHash = 3;
+}
+
+message MessageReceiveDesyncDebug
+{
+	int32 receivedJLE = 1;
+	int32 receivedStartFrame = 2;
+	int32 receivedCount = 3;
+	repeated bytes receivedSnapshots = 4;
+}
+
+message C2SInputMessage //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int32 SequenceChannel = 1;
+	bool IsRLE = 2;
+	int32 Frame = 3;
+	MessageInputRLE InputRLE = 4;
+	MessageInputCoalesced InputCoalesced = 5;
+	MessageReceiveRemoteNCFAndJLE ReceiveRemoteNCFAndJLE = 6;
+	MessageReceiveDesyncDebug ReceiveDesyncDebug = 7;
 }
 
 message S2CCoalesceInput //IActorMessage

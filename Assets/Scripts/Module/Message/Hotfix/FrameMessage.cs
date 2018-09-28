@@ -1260,245 +1260,6 @@ namespace ETModel {
 
   }
 
-  public partial class InputRLE : pb::IMessage {
-    private static readonly pb::MessageParser<InputRLE> _parser = new pb::MessageParser<InputRLE>(() => new InputRLE());
-    public static pb::MessageParser<InputRLE> Parser { get { return _parser; } }
-
-    private int rpcId_;
-    public int RpcId {
-      get { return rpcId_; }
-      set {
-        rpcId_ = value;
-      }
-    }
-
-    private long actorId_;
-    public long ActorId {
-      get { return actorId_; }
-      set {
-        actorId_ = value;
-      }
-    }
-
-    private static readonly pb::FieldCodec<int> _repeated_currentRunLength_codec
-        = pb::FieldCodec.ForInt32(10);
-    private pbc::RepeatedField<int> currentRunLength_ = new pbc::RepeatedField<int>();
-    public pbc::RepeatedField<int> CurrentRunLength {
-      get { return currentRunLength_; }
-      set { currentRunLength_ = value; }
-    }
-
-    private static readonly pb::FieldCodec<pb::ByteString> _repeated_currentInputState_codec
-        = pb::FieldCodec.ForBytes(18);
-    private pbc::RepeatedField<pb::ByteString> currentInputState_ = new pbc::RepeatedField<pb::ByteString>();
-    public pbc::RepeatedField<pb::ByteString> CurrentInputState {
-      get { return currentInputState_; }
-      set { currentInputState_ = value; }
-    }
-
-    private int terminator_;
-    public int Terminator {
-      get { return terminator_; }
-      set {
-        terminator_ = value;
-      }
-    }
-
-    public void WriteTo(pb::CodedOutputStream output) {
-      currentRunLength_.WriteTo(output, _repeated_currentRunLength_codec);
-      currentInputState_.WriteTo(output, _repeated_currentInputState_codec);
-      if (Terminator != 0) {
-        output.WriteRawTag(24);
-        output.WriteInt32(Terminator);
-      }
-      if (RpcId != 0) {
-        output.WriteRawTag(208, 5);
-        output.WriteInt32(RpcId);
-      }
-      if (ActorId != 0L) {
-        output.WriteRawTag(232, 5);
-        output.WriteInt64(ActorId);
-      }
-    }
-
-    public int CalculateSize() {
-      int size = 0;
-      if (RpcId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
-      }
-      if (ActorId != 0L) {
-        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
-      }
-      size += currentRunLength_.CalculateSize(_repeated_currentRunLength_codec);
-      size += currentInputState_.CalculateSize(_repeated_currentInputState_codec);
-      if (Terminator != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Terminator);
-      }
-      return size;
-    }
-
-    public void MergeFrom(pb::CodedInputStream input) {
-      currentRunLength_.Clear();
-      currentInputState_.Clear();
-      terminator_ = 0;
-      rpcId_ = 0;
-      actorId_ = 0;
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            input.SkipLastField();
-            break;
-          case 10:
-          case 8: {
-            currentRunLength_.AddEntriesFrom(input, _repeated_currentRunLength_codec);
-            break;
-          }
-          case 18: {
-            currentInputState_.AddEntriesFrom(input, _repeated_currentInputState_codec);
-            break;
-          }
-          case 24: {
-            Terminator = input.ReadInt32();
-            break;
-          }
-          case 720: {
-            RpcId = input.ReadInt32();
-            break;
-          }
-          case 744: {
-            ActorId = input.ReadInt64();
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public partial class InputCoalesced : pb::IMessage {
-    private static readonly pb::MessageParser<InputCoalesced> _parser = new pb::MessageParser<InputCoalesced>(() => new InputCoalesced());
-    public static pb::MessageParser<InputCoalesced> Parser { get { return _parser; } }
-
-    private int rpcId_;
-    public int RpcId {
-      get { return rpcId_; }
-      set {
-        rpcId_ = value;
-      }
-    }
-
-    private long actorId_;
-    public long ActorId {
-      get { return actorId_; }
-      set {
-        actorId_ = value;
-      }
-    }
-
-    private uint firstInputCount_;
-    public uint FirstInputCount {
-      get { return firstInputCount_; }
-      set {
-        firstInputCount_ = value;
-      }
-    }
-
-    private pb::ByteString firstInput_ = pb::ByteString.Empty;
-    public pb::ByteString FirstInput {
-      get { return firstInput_; }
-      set {
-        firstInput_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    private pb::ByteString lastInput_ = pb::ByteString.Empty;
-    public pb::ByteString LastInput {
-      get { return lastInput_; }
-      set {
-        lastInput_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (FirstInputCount != 0) {
-        output.WriteRawTag(8);
-        output.WriteUInt32(FirstInputCount);
-      }
-      if (FirstInput.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteBytes(FirstInput);
-      }
-      if (LastInput.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteBytes(LastInput);
-      }
-      if (RpcId != 0) {
-        output.WriteRawTag(208, 5);
-        output.WriteInt32(RpcId);
-      }
-      if (ActorId != 0L) {
-        output.WriteRawTag(232, 5);
-        output.WriteInt64(ActorId);
-      }
-    }
-
-    public int CalculateSize() {
-      int size = 0;
-      if (RpcId != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
-      }
-      if (ActorId != 0L) {
-        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
-      }
-      if (FirstInputCount != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(FirstInputCount);
-      }
-      if (FirstInput.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(FirstInput);
-      }
-      if (LastInput.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(LastInput);
-      }
-      return size;
-    }
-
-    public void MergeFrom(pb::CodedInputStream input) {
-      firstInputCount_ = 0;
-      rpcId_ = 0;
-      actorId_ = 0;
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            input.SkipLastField();
-            break;
-          case 8: {
-            FirstInputCount = input.ReadUInt32();
-            break;
-          }
-          case 18: {
-            FirstInput = input.ReadBytes();
-            break;
-          }
-          case 26: {
-            LastInput = input.ReadBytes();
-            break;
-          }
-          case 720: {
-            RpcId = input.ReadInt32();
-            break;
-          }
-          case 744: {
-            ActorId = input.ReadInt64();
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
   public partial class InputHeader : pb::IMessage {
     private static readonly pb::MessageParser<InputHeader> _parser = new pb::MessageParser<InputHeader>(() => new InputHeader());
     public static pb::MessageParser<InputHeader> Parser { get { return _parser; } }
@@ -1772,6 +1533,554 @@ namespace ETModel {
             break;
           case 8: {
             Inputstate = input.ReadInt32();
+            break;
+          }
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+          case 744: {
+            ActorId = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class MessageInputRLE : pb::IMessage {
+    private static readonly pb::MessageParser<MessageInputRLE> _parser = new pb::MessageParser<MessageInputRLE>(() => new MessageInputRLE());
+    public static pb::MessageParser<MessageInputRLE> Parser { get { return _parser; } }
+
+    private int count_;
+    public int Count {
+      get { return count_; }
+      set {
+        count_ = value;
+      }
+    }
+
+    private int inputstate_;
+    public int Inputstate {
+      get { return inputstate_; }
+      set {
+        inputstate_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Count != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Count);
+      }
+      if (Inputstate != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Inputstate);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (Count != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Count);
+      }
+      if (Inputstate != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Inputstate);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      count_ = 0;
+      inputstate_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            Count = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Inputstate = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class MessageInputCoalesced : pb::IMessage {
+    private static readonly pb::MessageParser<MessageInputCoalesced> _parser = new pb::MessageParser<MessageInputCoalesced>(() => new MessageInputCoalesced());
+    public static pb::MessageParser<MessageInputCoalesced> Parser { get { return _parser; } }
+
+    private int firstInputCount_;
+    public int FirstInputCount {
+      get { return firstInputCount_; }
+      set {
+        firstInputCount_ = value;
+      }
+    }
+
+    private int firstInput_;
+    public int FirstInput {
+      get { return firstInput_; }
+      set {
+        firstInput_ = value;
+      }
+    }
+
+    private int lastInput_;
+    public int LastInput {
+      get { return lastInput_; }
+      set {
+        lastInput_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstInputCount != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FirstInputCount);
+      }
+      if (FirstInput != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(FirstInput);
+      }
+      if (LastInput != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(LastInput);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstInputCount != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(FirstInputCount);
+      }
+      if (FirstInput != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(FirstInput);
+      }
+      if (LastInput != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(LastInput);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      firstInputCount_ = 0;
+      firstInput_ = 0;
+      lastInput_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            FirstInputCount = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            FirstInput = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            LastInput = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class MessageReceiveRemoteNCFAndJLE : pb::IMessage {
+    private static readonly pb::MessageParser<MessageReceiveRemoteNCFAndJLE> _parser = new pb::MessageParser<MessageReceiveRemoteNCFAndJLE>(() => new MessageReceiveRemoteNCFAndJLE());
+    public static pb::MessageParser<MessageReceiveRemoteNCFAndJLE> Parser { get { return _parser; } }
+
+    private int receivedNCF_;
+    public int ReceivedNCF {
+      get { return receivedNCF_; }
+      set {
+        receivedNCF_ = value;
+      }
+    }
+
+    private int receivedJLE_;
+    public int ReceivedJLE {
+      get { return receivedJLE_; }
+      set {
+        receivedJLE_ = value;
+      }
+    }
+
+    private int receivedHash_;
+    public int ReceivedHash {
+      get { return receivedHash_; }
+      set {
+        receivedHash_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (ReceivedNCF != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(ReceivedNCF);
+      }
+      if (ReceivedJLE != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(ReceivedJLE);
+      }
+      if (ReceivedHash != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(ReceivedHash);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (ReceivedNCF != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReceivedNCF);
+      }
+      if (ReceivedJLE != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReceivedJLE);
+      }
+      if (ReceivedHash != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReceivedHash);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      receivedNCF_ = 0;
+      receivedJLE_ = 0;
+      receivedHash_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            ReceivedNCF = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            ReceivedJLE = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            ReceivedHash = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class MessageReceiveDesyncDebug : pb::IMessage {
+    private static readonly pb::MessageParser<MessageReceiveDesyncDebug> _parser = new pb::MessageParser<MessageReceiveDesyncDebug>(() => new MessageReceiveDesyncDebug());
+    public static pb::MessageParser<MessageReceiveDesyncDebug> Parser { get { return _parser; } }
+
+    private int receivedJLE_;
+    public int ReceivedJLE {
+      get { return receivedJLE_; }
+      set {
+        receivedJLE_ = value;
+      }
+    }
+
+    private int receivedStartFrame_;
+    public int ReceivedStartFrame {
+      get { return receivedStartFrame_; }
+      set {
+        receivedStartFrame_ = value;
+      }
+    }
+
+    private int receivedCount_;
+    public int ReceivedCount {
+      get { return receivedCount_; }
+      set {
+        receivedCount_ = value;
+      }
+    }
+
+    private static readonly pb::FieldCodec<pb::ByteString> _repeated_receivedSnapshots_codec
+        = pb::FieldCodec.ForBytes(34);
+    private pbc::RepeatedField<pb::ByteString> receivedSnapshots_ = new pbc::RepeatedField<pb::ByteString>();
+    public pbc::RepeatedField<pb::ByteString> ReceivedSnapshots {
+      get { return receivedSnapshots_; }
+      set { receivedSnapshots_ = value; }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (ReceivedJLE != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(ReceivedJLE);
+      }
+      if (ReceivedStartFrame != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(ReceivedStartFrame);
+      }
+      if (ReceivedCount != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(ReceivedCount);
+      }
+      receivedSnapshots_.WriteTo(output, _repeated_receivedSnapshots_codec);
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (ReceivedJLE != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReceivedJLE);
+      }
+      if (ReceivedStartFrame != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReceivedStartFrame);
+      }
+      if (ReceivedCount != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ReceivedCount);
+      }
+      size += receivedSnapshots_.CalculateSize(_repeated_receivedSnapshots_codec);
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      receivedJLE_ = 0;
+      receivedStartFrame_ = 0;
+      receivedCount_ = 0;
+      receivedSnapshots_.Clear();
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            ReceivedJLE = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            ReceivedStartFrame = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            ReceivedCount = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            receivedSnapshots_.AddEntriesFrom(input, _repeated_receivedSnapshots_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class C2SInputMessage : pb::IMessage {
+    private static readonly pb::MessageParser<C2SInputMessage> _parser = new pb::MessageParser<C2SInputMessage>(() => new C2SInputMessage());
+    public static pb::MessageParser<C2SInputMessage> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private long actorId_;
+    public long ActorId {
+      get { return actorId_; }
+      set {
+        actorId_ = value;
+      }
+    }
+
+    private int sequenceChannel_;
+    public int SequenceChannel {
+      get { return sequenceChannel_; }
+      set {
+        sequenceChannel_ = value;
+      }
+    }
+
+    private bool isRLE_;
+    public bool IsRLE {
+      get { return isRLE_; }
+      set {
+        isRLE_ = value;
+      }
+    }
+
+    private int frame_;
+    public int Frame {
+      get { return frame_; }
+      set {
+        frame_ = value;
+      }
+    }
+
+    private global::ETModel.MessageInputRLE inputRLE_;
+    public global::ETModel.MessageInputRLE InputRLE {
+      get { return inputRLE_; }
+      set {
+        inputRLE_ = value;
+      }
+    }
+
+    private global::ETModel.MessageInputCoalesced inputCoalesced_;
+    public global::ETModel.MessageInputCoalesced InputCoalesced {
+      get { return inputCoalesced_; }
+      set {
+        inputCoalesced_ = value;
+      }
+    }
+
+    private global::ETModel.MessageReceiveRemoteNCFAndJLE receiveRemoteNCFAndJLE_;
+    public global::ETModel.MessageReceiveRemoteNCFAndJLE ReceiveRemoteNCFAndJLE {
+      get { return receiveRemoteNCFAndJLE_; }
+      set {
+        receiveRemoteNCFAndJLE_ = value;
+      }
+    }
+
+    private global::ETModel.MessageReceiveDesyncDebug receiveDesyncDebug_;
+    public global::ETModel.MessageReceiveDesyncDebug ReceiveDesyncDebug {
+      get { return receiveDesyncDebug_; }
+      set {
+        receiveDesyncDebug_ = value;
+      }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (SequenceChannel != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(SequenceChannel);
+      }
+      if (IsRLE != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(IsRLE);
+      }
+      if (Frame != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Frame);
+      }
+      if (inputRLE_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(InputRLE);
+      }
+      if (inputCoalesced_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(InputCoalesced);
+      }
+      if (receiveRemoteNCFAndJLE_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(ReceiveRemoteNCFAndJLE);
+      }
+      if (receiveDesyncDebug_ != null) {
+        output.WriteRawTag(58);
+        output.WriteMessage(ReceiveDesyncDebug);
+      }
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+      if (ActorId != 0L) {
+        output.WriteRawTag(232, 5);
+        output.WriteInt64(ActorId);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (ActorId != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      if (SequenceChannel != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SequenceChannel);
+      }
+      if (IsRLE != false) {
+        size += 1 + 1;
+      }
+      if (Frame != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Frame);
+      }
+      if (inputRLE_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(InputRLE);
+      }
+      if (inputCoalesced_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(InputCoalesced);
+      }
+      if (receiveRemoteNCFAndJLE_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ReceiveRemoteNCFAndJLE);
+      }
+      if (receiveDesyncDebug_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ReceiveDesyncDebug);
+      }
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      sequenceChannel_ = 0;
+      isRLE_ = false;
+      frame_ = 0;
+      rpcId_ = 0;
+      actorId_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            SequenceChannel = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            IsRLE = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Frame = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            if (inputRLE_ == null) {
+              inputRLE_ = new global::ETModel.MessageInputRLE();
+            }
+            input.ReadMessage(inputRLE_);
+            break;
+          }
+          case 42: {
+            if (inputCoalesced_ == null) {
+              inputCoalesced_ = new global::ETModel.MessageInputCoalesced();
+            }
+            input.ReadMessage(inputCoalesced_);
+            break;
+          }
+          case 50: {
+            if (receiveRemoteNCFAndJLE_ == null) {
+              receiveRemoteNCFAndJLE_ = new global::ETModel.MessageReceiveRemoteNCFAndJLE();
+            }
+            input.ReadMessage(receiveRemoteNCFAndJLE_);
+            break;
+          }
+          case 58: {
+            if (receiveDesyncDebug_ == null) {
+              receiveDesyncDebug_ = new global::ETModel.MessageReceiveDesyncDebug();
+            }
+            input.ReadMessage(receiveDesyncDebug_);
             break;
           }
           case 720: {
