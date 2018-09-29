@@ -1,4 +1,6 @@
 ﻿using RollBack;
+using RollBack.Input;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ETModel
@@ -11,7 +13,14 @@ namespace ETModel
 	
 	public sealed class Unit: Entity
 	{
+        public RollbackDriver mRollebackDriver;
         public int mPlayerIndex;
+        public bool ReadyForUpdate = false;
+        Dictionary<int, InputState> mFrameWithInputDic = new Dictionary<int, InputState>();
+
+        Queue<C2SInputMessage> incomingMessageQueue = new Queue<C2SInputMessage>();
+
+        public InputState mNowInpuState = InputState.None;
         public InputAssignment mInputAssignment { get; set; }
         public VInt3 IntPos;
         private string mName;
@@ -61,7 +70,31 @@ namespace ETModel
 			}
 		}
 
-		public override void Dispose()
+        public void QueueMessage(C2SInputMessage message)
+        {
+            incomingMessageQueue.Enqueue(message);
+        }
+
+        public C2SInputMessage ReadNetMessage()
+        {
+            if (incomingMessageQueue.Count > 0)
+                return incomingMessageQueue.Dequeue();
+
+            return null;
+        }
+
+        public void AddInputStateWithFrame(InputState state)
+        {
+            mNowInpuState = state;
+            mFrameWithInputDic[mRollebackDriver.CurrentFrame] = state;
+        }
+
+        public void SetRollBackDriver(RollbackDriver d)
+        {
+            mRollebackDriver = d;
+        }
+
+        public override void Dispose()
 		{
 			if (this.IsDisposed)
 			{

@@ -32,6 +32,11 @@ public class GameLooper : MonoBehaviour {
         Game.EventSystem.LateUpdate();
     }
 
+    private void FixedUpdate()
+    {
+        Game.EventSystem.FixedUpdate();
+    }
+
     private void OnApplicationQuit()
     {
         Game.Close();

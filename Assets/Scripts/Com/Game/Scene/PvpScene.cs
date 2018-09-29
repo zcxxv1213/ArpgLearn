@@ -27,7 +27,18 @@ namespace Assets.Scripts.Com.Game.Module.Scene
         }
         private void OnEnterBattleScene()
         {
-            ETModel.Game.Scene.AddComponent<BattleControlComponent>().CreatUnitModel(ETModel.Game.Scene.GetComponent<UnitComponent>().GetAll());
+            WorldEntity worldEntity = ComponentFactory.Create<WorldEntity>();
+            ETModel.Scene mScene = ETModel.Game.Scene;
+            mScene.AddComponent<BattleControlComponent>().CreatUnitModel(mScene.GetComponent<UnitComponent>().GetAll());
+
+            mScene.GetComponent<WorldManagerComponent>().AddWorld(worldEntity);
+            foreach (var v in mScene.GetComponent<UnitComponent>().GetAll())
+            {
+                ETModel.Game.Scene.GetComponent<WorldManagerComponent>().AddUnitToWorld(v, worldEntity);
+            }
+            ThreadEntity threadEntity = ComponentFactory.Create<ThreadEntity>();
+            threadEntity.InitWorldEntity(worldEntity);
+            mScene.GetComponent<ThreadComponent>().Add(threadEntity);
             CameraController.Instance.OnEnterBattleScene();
         }
         public override void BeforeExitScene()

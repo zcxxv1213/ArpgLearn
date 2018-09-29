@@ -29,6 +29,7 @@ public class Main : MonoBehaviour
         Game.Scene.AddComponent<ConfigComponent>();
         Game.Scene.AddComponent<OpcodeTypeComponent>();
         Game.Scene.AddComponent<MessageDispatherComponent>();
+        Game.Scene.AddComponent<ThreadComponent>();
         GameObject gameLooepr = new GameObject();
         gameLooepr.name = "GameLooper";
         gameLooepr.AddComponent<GameLooper>();

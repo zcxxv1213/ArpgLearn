@@ -34,8 +34,9 @@ namespace ETModel
         private readonly UnOrderMultiMap<Type, IFrameUpdateSystem> frameSystems = new UnOrderMultiMap<Type, IFrameUpdateSystem>();
 
         private readonly UnOrderMultiMap<Type, ILateUpdateSystem> lateUpdateSystems = new UnOrderMultiMap<Type, ILateUpdateSystem>();
+        private readonly UnOrderMultiMap<Type, IFixUpdateSystem> fixUpdateSystems = new UnOrderMultiMap<Type, IFixUpdateSystem>();
 
-		private readonly UnOrderMultiMap<Type, IChangeSystem> changeSystems = new UnOrderMultiMap<Type, IChangeSystem>();
+        private readonly UnOrderMultiMap<Type, IChangeSystem> changeSystems = new UnOrderMultiMap<Type, IChangeSystem>();
 
 		private Queue<long> updates = new Queue<long>();
 		private Queue<long> updates2 = new Queue<long>();
@@ -49,6 +50,9 @@ namespace ETModel
 		private Queue<long> lateUpdates2 = new Queue<long>();
         private Queue<long> frames = new Queue<long>();
         private Queue<long> frames2 = new Queue<long>();
+
+        private Queue<long> fixUpdates = new Queue<long>();
+        private Queue<long> fixUpdates2 = new Queue<long>();
 
         public void Add(DLLType dllType, Assembly assembly)
 		{
@@ -71,7 +75,8 @@ namespace ETModel
 
 			this.awakeSystems.Clear();
 			this.lateUpdateSystems.Clear();
-			this.updateSystems.Clear();
+            this.fixUpdateSystems.Clear();
+            this.updateSystems.Clear();
 			this.startSystems.Clear();
 			this.loadSystems.Clear();
 			this.changeSystems.Clear();
@@ -112,7 +117,13 @@ namespace ETModel
 					this.lateUpdateSystems.Add(lateUpdateSystem.Type(), lateUpdateSystem);
 				}
 
-				IStartSystem startSystem = obj as IStartSystem;
+                IFixUpdateSystem fixUpdateSystem = obj as IFixUpdateSystem;
+                if (fixUpdateSystem != null)
+                {
+                    this.fixUpdateSystems.Add(fixUpdateSystem.Type(), fixUpdateSystem);
+                }
+
+                IStartSystem startSystem = obj as IStartSystem;
 				if (startSystem != null)
 				{
 					this.startSystems.Add(startSystem.Type(), startSystem);
@@ -206,6 +217,12 @@ namespace ETModel
 			{
 				this.lateUpdates.Enqueue(component.InstanceId);
 			}
+
+            if (this.fixUpdateSystems.ContainsKey(type))
+            {
+                this.fixUpdates.Enqueue(component.InstanceId);
+            }
+
             if (this.frameSystems.ContainsKey(type))
             {
                 this.frames.Enqueue(component.InstanceId);
@@ -594,7 +611,48 @@ namespace ETModel
 			ObjectHelper.Swap(ref this.lateUpdates, ref this.lateUpdates2);
 		}
 
-		public void Run(string type)
+
+        public void FixedUpdate()
+        {
+            while (this.fixUpdates.Count > 0)
+            {
+                long instanceId = this.fixUpdates.Dequeue();
+                Component component;
+                if (!this.allComponents.TryGetValue(instanceId, out component))
+                {
+                    continue;
+                }
+                if (component.IsDisposed)
+                {
+                    continue;
+                }
+
+                List<IFixUpdateSystem> iFixUpdateSystems = this.fixUpdateSystems[component.GetType()];
+                if (iFixUpdateSystems == null)
+                {
+                    continue;
+                }
+
+                this.fixUpdates2.Enqueue(instanceId);
+
+                foreach (IFixUpdateSystem iFixUpdateSystem in iFixUpdateSystems)
+                {
+                    try
+                    {
+                        iFixUpdateSystem.Run(component);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e);
+                    }
+                }
+            }
+
+            ObjectHelper.Swap(ref this.fixUpdates, ref this.fixUpdates2);
+        }
+
+
+        public void Run(string type)
 		{
 			List<IEvent> iEvents;
 			if (!this.allEvents.TryGetValue(type, out iEvents))

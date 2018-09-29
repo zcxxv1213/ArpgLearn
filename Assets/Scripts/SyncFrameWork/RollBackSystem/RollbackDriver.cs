@@ -11,12 +11,12 @@ namespace RollBack
 {
     public class RollbackDriver:ETModel.Component
     {
-        readonly IGameState game;
-        readonly IAcceptsDesyncDumps dumpTarget;
-        readonly int inputBitsUsed;
+        public IGameState game;
+        public IAcceptsDesyncDumps dumpTarget;
+        public int inputBitsUsed;
         ETModel.Component mNetCompoonent = ETModel.Game.Scene.GetComponent<NetworkComponent>();
 
-        public RollbackDriver(IGameState game, IAcceptsDesyncDumps dumpTarget, int inputBitsUsed)
+        public void InitialDriver(IGameState game, IAcceptsDesyncDumps dumpTarget, int inputBitsUsed)
         {
             this.game = game;
             this.dumpTarget = dumpTarget;
