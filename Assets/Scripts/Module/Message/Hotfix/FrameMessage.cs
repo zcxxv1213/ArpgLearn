@@ -1553,59 +1553,51 @@ namespace ETModel {
     private static readonly pb::MessageParser<MessageInputRLE> _parser = new pb::MessageParser<MessageInputRLE>(() => new MessageInputRLE());
     public static pb::MessageParser<MessageInputRLE> Parser { get { return _parser; } }
 
-    private int count_;
-    public int Count {
+    private static readonly pb::FieldCodec<int> _repeated_count_codec
+        = pb::FieldCodec.ForInt32(10);
+    private pbc::RepeatedField<int> count_ = new pbc::RepeatedField<int>();
+    public pbc::RepeatedField<int> Count {
       get { return count_; }
-      set {
-        count_ = value;
-      }
+      set { count_ = value; }
     }
 
-    private int inputstate_;
-    public int Inputstate {
+    private static readonly pb::FieldCodec<int> _repeated_inputstate_codec
+        = pb::FieldCodec.ForInt32(18);
+    private pbc::RepeatedField<int> inputstate_ = new pbc::RepeatedField<int>();
+    public pbc::RepeatedField<int> Inputstate {
       get { return inputstate_; }
-      set {
-        inputstate_ = value;
-      }
+      set { inputstate_ = value; }
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Count != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(Count);
-      }
-      if (Inputstate != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(Inputstate);
-      }
+      count_.WriteTo(output, _repeated_count_codec);
+      inputstate_.WriteTo(output, _repeated_inputstate_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (Count != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Count);
-      }
-      if (Inputstate != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Inputstate);
-      }
+      size += count_.CalculateSize(_repeated_count_codec);
+      size += inputstate_.CalculateSize(_repeated_inputstate_codec);
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
-      count_ = 0;
-      inputstate_ = 0;
+      count_.Clear();
+      inputstate_.Clear();
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
             input.SkipLastField();
             break;
+          case 10:
           case 8: {
-            Count = input.ReadInt32();
+            count_.AddEntriesFrom(input, _repeated_count_codec);
             break;
           }
+          case 18:
           case 16: {
-            Inputstate = input.ReadInt32();
+            inputstate_.AddEntriesFrom(input, _repeated_inputstate_codec);
             break;
           }
         }
@@ -2097,9 +2089,9 @@ namespace ETModel {
 
   }
 
-  public partial class S2CCoalesceInput : pb::IMessage {
-    private static readonly pb::MessageParser<S2CCoalesceInput> _parser = new pb::MessageParser<S2CCoalesceInput>(() => new S2CCoalesceInput());
-    public static pb::MessageParser<S2CCoalesceInput> Parser { get { return _parser; } }
+  public partial class C2SCoalesceInput : pb::IMessage {
+    private static readonly pb::MessageParser<C2SCoalesceInput> _parser = new pb::MessageParser<C2SCoalesceInput>(() => new C2SCoalesceInput());
+    public static pb::MessageParser<C2SCoalesceInput> Parser { get { return _parser; } }
 
     private int rpcId_;
     public int RpcId {
@@ -2184,6 +2176,14 @@ namespace ETModel {
       }
     }
 
+    private global::ETModel.MessageInputRLE myMessageInputRLE_;
+    public global::ETModel.MessageInputRLE MyMessageInputRLE {
+      get { return myMessageInputRLE_; }
+      set {
+        myMessageInputRLE_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (InputFormat != 0) {
         output.WriteRawTag(8);
@@ -2216,6 +2216,10 @@ namespace ETModel {
       if (NCFSnapshot != 0) {
         output.WriteRawTag(64);
         output.WriteUInt32(NCFSnapshot);
+      }
+      if (myMessageInputRLE_ != null) {
+        output.WriteRawTag(74);
+        output.WriteMessage(MyMessageInputRLE);
       }
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
@@ -2258,6 +2262,9 @@ namespace ETModel {
       }
       if (NCFSnapshot != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(NCFSnapshot);
+      }
+      if (myMessageInputRLE_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(MyMessageInputRLE);
       }
       return size;
     }
@@ -2309,6 +2316,144 @@ namespace ETModel {
           }
           case 64: {
             NCFSnapshot = input.ReadUInt32();
+            break;
+          }
+          case 74: {
+            if (myMessageInputRLE_ == null) {
+              myMessageInputRLE_ = new global::ETModel.MessageInputRLE();
+            }
+            input.ReadMessage(myMessageInputRLE_);
+            break;
+          }
+          case 720: {
+            RpcId = input.ReadInt32();
+            break;
+          }
+          case 744: {
+            ActorId = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public partial class S2CCoalesceInput : pb::IMessage {
+    private static readonly pb::MessageParser<S2CCoalesceInput> _parser = new pb::MessageParser<S2CCoalesceInput>(() => new S2CCoalesceInput());
+    public static pb::MessageParser<S2CCoalesceInput> Parser { get { return _parser; } }
+
+    private int rpcId_;
+    public int RpcId {
+      get { return rpcId_; }
+      set {
+        rpcId_ = value;
+      }
+    }
+
+    private long actorId_;
+    public long ActorId {
+      get { return actorId_; }
+      set {
+        actorId_ = value;
+      }
+    }
+
+    private static readonly pb::FieldCodec<int> _repeated_inputFormat_codec
+        = pb::FieldCodec.ForInt32(10);
+    private pbc::RepeatedField<int> inputFormat_ = new pbc::RepeatedField<int>();
+    /// <summary>
+    ///0为false 1为true
+    /// </summary>
+    public pbc::RepeatedField<int> InputFormat {
+      get { return inputFormat_; }
+      set { inputFormat_ = value; }
+    }
+
+    private static readonly pb::FieldCodec<int> _repeated_frame_codec
+        = pb::FieldCodec.ForInt32(18);
+    private pbc::RepeatedField<int> frame_ = new pbc::RepeatedField<int>();
+    public pbc::RepeatedField<int> Frame {
+      get { return frame_; }
+      set { frame_ = value; }
+    }
+
+    private static readonly pb::FieldCodec<global::ETModel.MessageInputRLE> _repeated_myMessageInputRLE_codec
+        = pb::FieldCodec.ForMessage(26, global::ETModel.MessageInputRLE.Parser);
+    private pbc::RepeatedField<global::ETModel.MessageInputRLE> myMessageInputRLE_ = new pbc::RepeatedField<global::ETModel.MessageInputRLE>();
+    public pbc::RepeatedField<global::ETModel.MessageInputRLE> MyMessageInputRLE {
+      get { return myMessageInputRLE_; }
+      set { myMessageInputRLE_ = value; }
+    }
+
+    private static readonly pb::FieldCodec<long> _repeated_unitID_codec
+        = pb::FieldCodec.ForInt64(34);
+    private pbc::RepeatedField<long> unitID_ = new pbc::RepeatedField<long>();
+    public pbc::RepeatedField<long> UnitID {
+      get { return unitID_; }
+      set { unitID_ = value; }
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      inputFormat_.WriteTo(output, _repeated_inputFormat_codec);
+      frame_.WriteTo(output, _repeated_frame_codec);
+      myMessageInputRLE_.WriteTo(output, _repeated_myMessageInputRLE_codec);
+      unitID_.WriteTo(output, _repeated_unitID_codec);
+      if (RpcId != 0) {
+        output.WriteRawTag(208, 5);
+        output.WriteInt32(RpcId);
+      }
+      if (ActorId != 0L) {
+        output.WriteRawTag(232, 5);
+        output.WriteInt64(ActorId);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (RpcId != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (ActorId != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      size += inputFormat_.CalculateSize(_repeated_inputFormat_codec);
+      size += frame_.CalculateSize(_repeated_frame_codec);
+      size += myMessageInputRLE_.CalculateSize(_repeated_myMessageInputRLE_codec);
+      size += unitID_.CalculateSize(_repeated_unitID_codec);
+      return size;
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      inputFormat_.Clear();
+      frame_.Clear();
+      myMessageInputRLE_.Clear();
+      unitID_.Clear();
+      rpcId_ = 0;
+      actorId_ = 0;
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10:
+          case 8: {
+            inputFormat_.AddEntriesFrom(input, _repeated_inputFormat_codec);
+            break;
+          }
+          case 18:
+          case 16: {
+            frame_.AddEntriesFrom(input, _repeated_frame_codec);
+            break;
+          }
+          case 26: {
+            myMessageInputRLE_.AddEntriesFrom(input, _repeated_myMessageInputRLE_codec);
+            break;
+          }
+          case 34:
+          case 32: {
+            unitID_.AddEntriesFrom(input, _repeated_unitID_codec);
             break;
           }
           case 720: {

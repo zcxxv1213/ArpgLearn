@@ -84,8 +84,9 @@ namespace ETModel
 
         private void UpdateWorld(double deltaTime)
         {
-            //mWorldEntity.GetComponent<>
+            //
             //Update RollBack System Send Input
+            mWorldEntity.GetComponent<RollBack.RollbackDriver>().Update(deltaTime);
         }
 
         public void Update()

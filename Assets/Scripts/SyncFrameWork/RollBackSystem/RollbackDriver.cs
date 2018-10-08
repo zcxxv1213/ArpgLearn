@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using ETModel;
+using Assets.Scripts.Com.Game.Events;
 
 namespace RollBack
 {
@@ -25,7 +26,11 @@ namespace RollBack
             SetupInputBuffers();
         }
 
-
+        public WorldEntity mWorldEntity;
+        public void SetWorldEntity(WorldEntity w)
+        {
+            mWorldEntity = w;
+        }
 
         /// <summary>The current (last received) JLE. Used to syncronise NCF updates between client and server when clients join/leave. 0 if no events have been received yet.</summary>
         int latestJoinLeaveEvent;
@@ -1429,13 +1434,13 @@ namespace RollBack
         }
 
 
-        void ClientUpdateTiming(TimeSpan elapsedTime)
+        void ClientUpdateTiming(double elapsedTime)
         {
          //   Debug.Assert(network.IsApplicationConnected);
           ///  Debug.Assert(!network.IsServer);
 
             packetTimeTracker.Update(Time.time);
-            synchronisedClock.Update(elapsedTime.TotalSeconds);
+            synchronisedClock.Update(elapsedTime);
         }
 
         #endregion
@@ -1459,7 +1464,7 @@ namespace RollBack
 
         int coalescedInputCount;
         InputState? coalescedInput;
-
+        //优化，没有操作不发送
         void SendOrCoalesceInput(InputState inputState)
         {
             // We tolerate duplicate input frames when receiving, so the fact we could be re-sending
@@ -1469,11 +1474,30 @@ namespace RollBack
             if (!coalescedInput.HasValue || coalescedInput.Value != inputState || coalescedInputCount == coalescedInputMaxCount)
             {
                 // Send:
-              /*  NetOutgoingMessage message = network.CreateMessage();
-                WriteInputHeader(message, InputFormat.Coalesced, CurrentFrame - coalescedInputCount);
-                WriteInputCoalesced(message, coalescedInput, coalescedInputCount, inputState);
-                WriteLocalNCFAndJLE(message);
-                */
+                C2SCoalesceInput mS2CMsg = new C2SCoalesceInput();
+                if (coalescedInput > 0)
+                {
+                    mS2CMsg.InputFormat = (int)InputFormat.Coalesced;
+                    mS2CMsg.StartFrame = CurrentFrame - coalescedInputCount;
+                    mS2CMsg.FirstInputCount = (uint)coalescedInputCount;
+                    mS2CMsg.FirstInputstateValue = (int)coalescedInput.Value;
+                    mS2CMsg.LastInputstateValue = (int)inputState;
+                    mS2CMsg.NewestConsistentFrame = newestConsistentFrame;
+                    mS2CMsg.LatestJoinLeaveEvent = latestJoinLeaveEvent;
+                    mS2CMsg.NCFSnapshot = GetHashForSnapshot(newestConsistentFrame);
+                }
+                else
+                {
+                    mS2CMsg.InputFormat = (int)InputFormat.Coalesced;
+                    mS2CMsg.StartFrame = CurrentFrame - coalescedInputCount;
+                    mS2CMsg.FirstInputCount = (uint)coalescedInputCount;
+                    mS2CMsg.LastInputstateValue = (int)inputState;
+                    mS2CMsg.NewestConsistentFrame = newestConsistentFrame;
+                    mS2CMsg.LatestJoinLeaveEvent = latestJoinLeaveEvent;
+                    mS2CMsg.NCFSnapshot = GetHashForSnapshot(newestConsistentFrame);
+                }
+                ETModel.Game.Scene.GetComponent<ETModel.SessionComponent>().Session.Send(mS2CMsg);
+                //this.Dispatch<List<Unit>, S2CCoalesceInput>(EventConstant.SEND_OR_COALESCE_INPUT, mWorldEntity.mUnitList, mS2CMsg);
                 if (!debugDisableInputBroadcast)
                  //   network.Broadcast(message, NetDeliveryMethod.ReliableUnordered, 0);
 
@@ -1491,9 +1515,9 @@ namespace RollBack
 
 
         /// <summary>Note: This expects that the current frame is set to the frame that this input is for (this input is to advance currentFrame-1 to currentFrame)</summary>
-        void ExtractAndBroadcastLocalInput(MultiInputState unnetworkedInputs)
+        void ExtractAndBroadcastLocalInput(InputState input)
         {
-            InputState localInput = unnetworkedInputs[LocalInputSourceIndex];
+            InputState localInput = input;
 
             Debug.Assert(!LocalInputBuffer.ContainsKey(CurrentFrame));
             LocalInputBuffer.Add(CurrentFrame, localInput);
@@ -1663,7 +1687,7 @@ namespace RollBack
 
 
         /// <summary>Important: Call P2PNetwork.Update before calling this method.</summary>
-        public void Update(TimeSpan elapsedTime, MultiInputState unnetworkedInputs)
+        public void Update(double elapsedTime)
         {
            /* if (!network.IsApplicationConnected)
                 return; // Nothing to do!*/
@@ -1695,9 +1719,9 @@ namespace RollBack
                   //  network.Disconnect(UserVisibleStrings.GameClockOutOfSync);
                     return;
                 }
-
+                //发送当前操作
                 while (CurrentFrame < synchronisedClock.CurrentFrame)
-                    Tick(unnetworkedInputs);
+                    Tick(mWorldEntity.GetMainUnit().mNowInpuState);
 
                 CleanupBuffers();
             }
@@ -1730,11 +1754,11 @@ namespace RollBack
 
 
         /// <param name="displayToUser">True if this is the final tick we are going to do during the update (ie: it will draw)</param>
-        void Tick(MultiInputState unnetworkedInputs)
+        void Tick(InputState input)
         {
             // Advance input:
             CurrentFrame++;
-            ExtractAndBroadcastLocalInput(unnetworkedInputs);
+            ExtractAndBroadcastLocalInput(input);
 
             // Advance game state:
             // (Note that we don't ever move the simulation frame backwards, we just wait to catch up)

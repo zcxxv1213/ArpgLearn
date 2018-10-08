@@ -19,10 +19,22 @@ namespace ETModel
         public List<Unit> mUnitList = new List<Unit>();
         Dictionary<int, Unit> mInputIndexDic = new Dictionary<int, Unit>();
         public int maxInputCount = 4;
+        private Unit mMainUnit;
         public void Awake()
         {
             this.AddComponent<WorldManagerComponent>();
             this.AddComponent<RollbackDriver>();
+            this.GetComponent<RollbackDriver>().SetWorldEntity(this);
+        }
+
+        public void SetMainUnit(Unit u)
+        {
+            mMainUnit = u;
+        }
+
+        public Unit GetMainUnit()
+        {
+            return mMainUnit;
         }
 
         public void SetGameState(GameState g)

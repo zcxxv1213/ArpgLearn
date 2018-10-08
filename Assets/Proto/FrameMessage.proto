@@ -125,8 +125,8 @@ message C2SOnlyInputState //IActorMessage
 
 message MessageInputRLE
 {
-	int32 Count = 1;
-	int32 Inputstate = 2;	
+	repeated int32 Count = 1;
+	repeated int32 Inputstate = 2;	
 }
 
 message MessageInputCoalesced
@@ -164,7 +164,7 @@ message C2SInputMessage //IActorMessage
 	MessageReceiveDesyncDebug ReceiveDesyncDebug = 7;
 }
 
-message S2CCoalesceInput //IActorMessage
+message C2SCoalesceInput //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
@@ -176,4 +176,15 @@ message S2CCoalesceInput //IActorMessage
 	int32 NewestConsistentFrame = 6;
 	int32 LatestJoinLeaveEvent = 7;
 	uint32 NCFSnapshot = 8;
+	MessageInputRLE MyMessageInputRLE = 9;
+}
+
+message S2CCoalesceInput //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	repeated int32 InputFormat = 1; //0为false 1为true
+	repeated int32 Frame = 2;
+	repeated MessageInputRLE MyMessageInputRLE = 3;
+	repeated int64 UnitID = 4;
 }

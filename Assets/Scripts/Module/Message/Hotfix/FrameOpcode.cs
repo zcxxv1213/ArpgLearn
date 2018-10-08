@@ -62,6 +62,9 @@ namespace ETModel
 	[Message(FrameOpcode.C2SInputMessage)]
 	public partial class C2SInputMessage : IActorMessage {}
 
+	[Message(FrameOpcode.C2SCoalesceInput)]
+	public partial class C2SCoalesceInput : IActorMessage {}
+
 	[Message(FrameOpcode.S2CCoalesceInput)]
 	public partial class S2CCoalesceInput : IActorMessage {}
 
@@ -90,6 +93,7 @@ namespace ETModel
 		 public const ushort MessageReceiveRemoteNCFAndJLE = 20018;
 		 public const ushort MessageReceiveDesyncDebug = 20019;
 		 public const ushort C2SInputMessage = 20020;
-		 public const ushort S2CCoalesceInput = 20021;
+		 public const ushort C2SCoalesceInput = 20021;
+		 public const ushort S2CCoalesceInput = 20022;
 	}
 }

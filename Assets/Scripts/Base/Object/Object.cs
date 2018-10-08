@@ -1,9 +1,10 @@
-﻿using System.ComponentModel;
+﻿using Assets.Scripts.Com.Game.Events;
+using System.ComponentModel;
 
 namespace ETModel
 {
-	public abstract class Object: ISupportInitialize
-	{
+	public abstract class Object: EventDispatcherInterface,ISupportInitialize
+    {
 		public virtual void BeginInit()
 		{
 		}
