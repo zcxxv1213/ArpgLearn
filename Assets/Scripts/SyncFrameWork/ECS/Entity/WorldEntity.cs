@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -17,6 +18,7 @@ namespace ETModel
     {
         GameState mGameState = null;
         public List<Unit> mUnitList = new List<Unit>();
+        Dictionary<long, Unit> mUnitDic = new Dictionary<long, Unit>();
         Dictionary<int, Unit> mInputIndexDic = new Dictionary<int, Unit>();
         public int maxInputCount = 4;
         private Unit mMainUnit;
@@ -51,6 +53,7 @@ namespace ETModel
         {
             if (!mUnitList.Contains(u))
             {
+                mUnitDic[u.Id] = u;
                 mUnitList.Add(u);
                 this.AddUnitWithInputIndex(u);
                 u.SetRollBackDriver(this.GetComponent<RollbackDriver>());
@@ -58,6 +61,20 @@ namespace ETModel
             else
             {
                 Log.Warning("重复添加UnitTo World");
+            }
+        }
+
+        public Unit GetUnitByID(long id)
+        {
+            Unit u;
+            if (mUnitDic.TryGetValue(id, out u))
+            {
+                return u;
+            }
+            else
+            {
+                Debug.LogError("获取不到ID" + id + "的Unit");
+                return null;
             }
         }
 

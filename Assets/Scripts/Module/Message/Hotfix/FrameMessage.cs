@@ -2359,46 +2359,25 @@ namespace ETModel {
       }
     }
 
-    private static readonly pb::FieldCodec<int> _repeated_inputFormat_codec
-        = pb::FieldCodec.ForInt32(10);
-    private pbc::RepeatedField<int> inputFormat_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    ///0为false 1为true
-    /// </summary>
-    public pbc::RepeatedField<int> InputFormat {
-      get { return inputFormat_; }
-      set { inputFormat_ = value; }
-    }
-
-    private static readonly pb::FieldCodec<int> _repeated_frame_codec
-        = pb::FieldCodec.ForInt32(18);
-    private pbc::RepeatedField<int> frame_ = new pbc::RepeatedField<int>();
-    public pbc::RepeatedField<int> Frame {
-      get { return frame_; }
-      set { frame_ = value; }
-    }
-
-    private static readonly pb::FieldCodec<global::ETModel.MessageInputRLE> _repeated_myMessageInputRLE_codec
-        = pb::FieldCodec.ForMessage(26, global::ETModel.MessageInputRLE.Parser);
-    private pbc::RepeatedField<global::ETModel.MessageInputRLE> myMessageInputRLE_ = new pbc::RepeatedField<global::ETModel.MessageInputRLE>();
-    public pbc::RepeatedField<global::ETModel.MessageInputRLE> MyMessageInputRLE {
-      get { return myMessageInputRLE_; }
-      set { myMessageInputRLE_ = value; }
-    }
-
     private static readonly pb::FieldCodec<long> _repeated_unitID_codec
-        = pb::FieldCodec.ForInt64(34);
+        = pb::FieldCodec.ForInt64(10);
     private pbc::RepeatedField<long> unitID_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> UnitID {
       get { return unitID_; }
       set { unitID_ = value; }
     }
 
+    private static readonly pb::FieldCodec<global::ETModel.C2SCoalesceInput> _repeated_mC2SCoalesceInputs_codec
+        = pb::FieldCodec.ForMessage(18, global::ETModel.C2SCoalesceInput.Parser);
+    private pbc::RepeatedField<global::ETModel.C2SCoalesceInput> mC2SCoalesceInputs_ = new pbc::RepeatedField<global::ETModel.C2SCoalesceInput>();
+    public pbc::RepeatedField<global::ETModel.C2SCoalesceInput> MC2SCoalesceInputs {
+      get { return mC2SCoalesceInputs_; }
+      set { mC2SCoalesceInputs_ = value; }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
-      inputFormat_.WriteTo(output, _repeated_inputFormat_codec);
-      frame_.WriteTo(output, _repeated_frame_codec);
-      myMessageInputRLE_.WriteTo(output, _repeated_myMessageInputRLE_codec);
       unitID_.WriteTo(output, _repeated_unitID_codec);
+      mC2SCoalesceInputs_.WriteTo(output, _repeated_mC2SCoalesceInputs_codec);
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
         output.WriteInt32(RpcId);
@@ -2417,18 +2396,14 @@ namespace ETModel {
       if (ActorId != 0L) {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
       }
-      size += inputFormat_.CalculateSize(_repeated_inputFormat_codec);
-      size += frame_.CalculateSize(_repeated_frame_codec);
-      size += myMessageInputRLE_.CalculateSize(_repeated_myMessageInputRLE_codec);
       size += unitID_.CalculateSize(_repeated_unitID_codec);
+      size += mC2SCoalesceInputs_.CalculateSize(_repeated_mC2SCoalesceInputs_codec);
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
-      inputFormat_.Clear();
-      frame_.Clear();
-      myMessageInputRLE_.Clear();
       unitID_.Clear();
+      mC2SCoalesceInputs_.Clear();
       rpcId_ = 0;
       actorId_ = 0;
       uint tag;
@@ -2439,21 +2414,11 @@ namespace ETModel {
             break;
           case 10:
           case 8: {
-            inputFormat_.AddEntriesFrom(input, _repeated_inputFormat_codec);
-            break;
-          }
-          case 18:
-          case 16: {
-            frame_.AddEntriesFrom(input, _repeated_frame_codec);
-            break;
-          }
-          case 26: {
-            myMessageInputRLE_.AddEntriesFrom(input, _repeated_myMessageInputRLE_codec);
-            break;
-          }
-          case 34:
-          case 32: {
             unitID_.AddEntriesFrom(input, _repeated_unitID_codec);
+            break;
+          }
+          case 18: {
+            mC2SCoalesceInputs_.AddEntriesFrom(input, _repeated_mC2SCoalesceInputs_codec);
             break;
           }
           case 720: {

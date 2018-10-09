@@ -64,13 +64,39 @@ namespace ETModel
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
+            bw.Write(frame);
 
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (bw.WriteBoolean(players[i] != null))
+                {
+                    players[i].Serialize(bw);
+                }
+            }
             return ms.ToArray();
         }
 
-        public void Deserialize(byte[] data)
+        public void DeSerialize(byte[] data)
         {
+            MemoryStream ms = new MemoryStream(data);
+            BinaryReader br = new BinaryReader(ms);
 
+            frame = br.ReadInt32();
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (br.ReadBoolean())
+                {
+                    //队伍信息先写死
+                    Unit u = ComponentFactory.Create<Unit, UnitType, Team>(UnitType.Hero, Team.Blue);
+                    u.DeSerialize(br);
+                    this.AddGameUnit(u);
+                }
+                else
+                {
+                    players[i] = null;
+                }
+            }
         }
 
         #endregion

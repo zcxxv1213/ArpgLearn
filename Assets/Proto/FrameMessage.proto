@@ -183,8 +183,6 @@ message S2CCoalesceInput //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
-	repeated int32 InputFormat = 1; //0为false 1为true
-	repeated int32 Frame = 2;
-	repeated MessageInputRLE MyMessageInputRLE = 3;
-	repeated int64 UnitID = 4;
+	repeated int64 UnitID = 1;
+	repeated C2SCoalesceInput mC2SCoalesceInputs = 2;
 }
