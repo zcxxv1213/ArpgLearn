@@ -4,6 +4,7 @@ package ETHotfix;
 message Player_Info_Base //IMessage
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 	int64 PlayerId = 91;
 	string NickName = 92;
 }
@@ -11,6 +12,7 @@ message Player_Info_Base //IMessage
 message C2R_Login // IRequest
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 	string	Account	 = 1;	// 帐号
 	string	Password = 2;	// 密码
 }
@@ -19,6 +21,7 @@ message R2C_Login // IResponse
 {
 	int32 RpcId = 90;
 	int32 Error = 91;
+	int64 Time = 94;
 	string Message = 92;
 	string Address = 1;
 	int64 Key	    = 2;
@@ -27,6 +30,7 @@ message R2C_Login // IResponse
 message C2G_LoginGate // IRequest
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 	int64 Key = 1;	// 帐号
 }
 
@@ -36,6 +40,7 @@ message G2C_LoginGate // IResponse
 	int32 Error = 91;
 	string Message = 92;
 	Player_Info_Base BaseInfo = 93;
+	int64 Time = 94;
 	int64 PlayerId = 1;
 }
 
@@ -43,17 +48,20 @@ message G2C_LoginGate // IResponse
 message C2G_SendMsg // IMessage
 {
 	string Info = 1;
+	int64 Time = 94;
 }
 
 message G2C_TestHotfixMessage // IMessage
 {
 	string Info = 1;
+	int64 Time = 94;
 }
 
 message C2M_TestActorRequest // IActorRequest
 {
 	int32 RpcId = 90;
 	int64 ActorId = 91;
+	int64 Time = 94;
 	string Info = 1;
 }
 
@@ -62,6 +70,7 @@ message M2C_TestActorResponse // IActorResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 	string Info = 1;
 }
 
@@ -69,6 +78,7 @@ message C2M_ReadyStartGame // IActorRequest
 {
 	int32 RpcId = 90;
 	int64 ActorId = 91;
+	int64 Time = 94;
 }
 
 message M2C_ReadyStartGame // IActorResponse
@@ -76,15 +86,19 @@ message M2C_ReadyStartGame // IActorResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 }
+
 message PlayerInfo // IMessage
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 }
 
 message C2G_PlayerInfo // IRequest
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 }
 
 message G2C_PlayerInfo // IResponse
@@ -92,5 +106,6 @@ message G2C_PlayerInfo // IResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 	PlayerInfo PlayerInfos = 1;
 }

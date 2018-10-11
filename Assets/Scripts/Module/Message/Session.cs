@@ -25,7 +25,7 @@ namespace ETModel
 
 		private readonly Dictionary<int, Action<IResponse>> requestCallback = new Dictionary<int, Action<IResponse>>();
 		private readonly List<byte[]> byteses = new List<byte[]>() { new byte[1], new byte[2] };
-
+        private LatencyComponent mLatencyComponent;
 		public NetworkComponent Network
 		{
 			get
@@ -56,8 +56,9 @@ namespace ETModel
 				this.Network.Remove(id); 
 			};
 			channel.ReadCallback += this.OnRead;
-			
-			this.channel.Start();
+            mLatencyComponent = ETModel.Game.Scene.GetComponent<LatencyComponent>();
+
+            this.channel.Start();
 		}
 		public override void Dispose()
 		{
@@ -142,7 +143,6 @@ namespace ETModel
 			// flag第一位为1表示这是rpc返回消息,否则交由MessageDispatcher分发
 			if ((flag & 0x01) == 0)
 			{
-                Log.Info("Rpc");
 				this.Network.MessageDispatcher.Dispatch(this, packet);
 				return;
 			}
@@ -165,7 +165,10 @@ namespace ETModel
 			}
 				
 			IResponse response = message as IResponse;
-			if (response == null)
+            mLatencyComponent.AddAMsgLan(response.Time - TimeHelper.GetCurrentTimeUnix());
+
+
+            if (response == null)
 			{
 				throw new Exception($"flag is response, but message is not! {opcode}");
 			}
@@ -192,15 +195,14 @@ namespace ETModel
 					{
 						throw new RpcException(response.Error, response.Message);
 					}
-
-					tcs.SetResult(response);
+                    mLatencyComponent.AddAMsgLan(response.Time - TimeHelper.GetCurrentTimeUnix());
+                    tcs.SetResult(response);
 				}
 				catch (Exception e)
 				{
 					tcs.SetException(new Exception($"Rpc Error: {request.GetType().FullName}", e));
 				}
 			};
-
 			request.RpcId = rpcId;
 			this.Send(0x00, request);
 			return tcs.Task;
@@ -219,8 +221,8 @@ namespace ETModel
 					{
 						throw new RpcException(response.Error, response.Message);
 					}
-
-					tcs.SetResult(response);
+                    mLatencyComponent.AddAMsgLan(response.Time - TimeHelper.GetCurrentTimeUnix());
+                    tcs.SetResult(response);
 				}
 				catch (Exception e)
 				{
@@ -237,7 +239,8 @@ namespace ETModel
 
 		public void Send(IMessage message)
 		{
-			this.Send(0x00, message);
+            message.Time = TimeHelper.GetCurrentTimeUnix();
+            this.Send(0x00, message);
 		}
 
 		public void Reply(IResponse message)

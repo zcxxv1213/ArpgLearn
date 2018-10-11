@@ -29,17 +29,16 @@ namespace ETModel
 				session.Network.Remove(session.Id);
 				return;
 			}
-				
-			// 如果是帧同步消息,交给ClientFrameComponent处理
-			/*FrameMessage frameMessage = message as FrameMessage;
+
+            // 如果是帧同步消息,交给ClientFrameComponent处理
+            /*FrameMessage frameMessage = message as FrameMessage;
 			if (frameMessage != null)
 			{
 				Game.Scene.GetComponent<ClientFrameComponent>().Add(session, frameMessage);
 				return;
 			}*/
-
-			// 普通消息或者是Rpc请求消息
-			MessageInfo messageInfo = new MessageInfo(packet.Opcode, message);
+            // 普通消息或者是Rpc请求消息
+            MessageInfo messageInfo = new MessageInfo(packet.Opcode, message);
 			Game.Scene.GetComponent<MessageDispatherComponent>().Handle(session, messageInfo);
 		}
 	}

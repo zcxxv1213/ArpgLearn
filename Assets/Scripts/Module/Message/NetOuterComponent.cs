@@ -25,7 +25,7 @@
 			this.Awake(NetworkProtocol.TCP);
 			this.MessagePacker = new ProtobufPacker();
 			this.MessageDispatcher = new ClientDispatcher();
-		}
+        }
 
 		public new void Update()
 		{

@@ -29,6 +29,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     private string info_ = "";
     public string Info {
       get { return info_; }
@@ -50,6 +58,10 @@ namespace ETModel {
         output.WriteRawTag(232, 5);
         output.WriteInt64(ActorId);
       }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
@@ -59,6 +71,9 @@ namespace ETModel {
       }
       if (ActorId != 0L) {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
       if (Info.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Info);
@@ -70,6 +85,7 @@ namespace ETModel {
       info_ = "";
       rpcId_ = 0;
       actorId_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -86,6 +102,10 @@ namespace ETModel {
           }
           case 744: {
             ActorId = input.ReadInt64();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -114,6 +134,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     private string request_ = "";
     public string Request {
       get { return request_; }
@@ -135,6 +163,10 @@ namespace ETModel {
         output.WriteRawTag(232, 5);
         output.WriteInt64(ActorId);
       }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
@@ -144,6 +176,9 @@ namespace ETModel {
       }
       if (ActorId != 0L) {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
       if (Request.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Request);
@@ -155,6 +190,7 @@ namespace ETModel {
       request_ = "";
       rpcId_ = 0;
       actorId_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -171,6 +207,10 @@ namespace ETModel {
           }
           case 744: {
             ActorId = input.ReadInt64();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -207,6 +247,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     private string response_ = "";
     public string Response {
       get { return response_; }
@@ -232,6 +280,10 @@ namespace ETModel {
         output.WriteRawTag(226, 5);
         output.WriteString(Message);
       }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
@@ -245,6 +297,9 @@ namespace ETModel {
       if (Message.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(Message);
       }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       if (Response.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Response);
       }
@@ -256,6 +311,7 @@ namespace ETModel {
       rpcId_ = 0;
       error_ = 0;
       message_ = "";
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -276,6 +332,10 @@ namespace ETModel {
           }
           case 738: {
             Message = input.ReadString();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -304,6 +364,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     private int mapIndex_;
     public int MapIndex {
       get { return mapIndex_; }
@@ -325,6 +393,10 @@ namespace ETModel {
         output.WriteRawTag(232, 5);
         output.WriteInt64(ActorId);
       }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
@@ -334,6 +406,9 @@ namespace ETModel {
       }
       if (ActorId != 0L) {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
+      }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
       if (MapIndex != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(MapIndex);
@@ -345,6 +420,7 @@ namespace ETModel {
       mapIndex_ = 0;
       rpcId_ = 0;
       actorId_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -361,6 +437,10 @@ namespace ETModel {
           }
           case 744: {
             ActorId = input.ReadInt64();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -397,6 +477,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
@@ -409,6 +497,10 @@ namespace ETModel {
       if (Message.Length != 0) {
         output.WriteRawTag(226, 5);
         output.WriteString(Message);
+      }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
       }
     }
 
@@ -423,6 +515,9 @@ namespace ETModel {
       if (Message.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(Message);
       }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       return size;
     }
 
@@ -430,6 +525,7 @@ namespace ETModel {
       rpcId_ = 0;
       error_ = 0;
       message_ = "";
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -446,6 +542,10 @@ namespace ETModel {
           }
           case 738: {
             Message = input.ReadString();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -466,10 +566,22 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
         output.WriteInt32(RpcId);
+      }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
       }
     }
 
@@ -478,11 +590,15 @@ namespace ETModel {
       if (RpcId != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
       }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
       rpcId_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -491,6 +607,10 @@ namespace ETModel {
             break;
           case 720: {
             RpcId = input.ReadInt32();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -524,6 +644,14 @@ namespace ETModel {
       get { return message_; }
       set {
         message_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
       }
     }
 
@@ -573,6 +701,10 @@ namespace ETModel {
         output.WriteRawTag(226, 5);
         output.WriteString(Message);
       }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
@@ -585,6 +717,9 @@ namespace ETModel {
       }
       if (Message.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(Message);
+      }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
       if (UnitId != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(UnitId);
@@ -603,6 +738,7 @@ namespace ETModel {
       rpcId_ = 0;
       error_ = 0;
       message_ = "";
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -631,6 +767,10 @@ namespace ETModel {
           }
           case 738: {
             Message = input.ReadString();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -849,6 +989,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     private static readonly pb::FieldCodec<global::ETModel.UnitInfo> _repeated_units_codec
         = pb::FieldCodec.ForMessage(10, global::ETModel.UnitInfo.Parser);
     private pbc::RepeatedField<global::ETModel.UnitInfo> units_ = new pbc::RepeatedField<global::ETModel.UnitInfo>();
@@ -867,6 +1015,10 @@ namespace ETModel {
         output.WriteRawTag(232, 5);
         output.WriteInt64(ActorId);
       }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
@@ -877,6 +1029,9 @@ namespace ETModel {
       if (ActorId != 0L) {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(ActorId);
       }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       size += units_.CalculateSize(_repeated_units_codec);
       return size;
     }
@@ -885,6 +1040,7 @@ namespace ETModel {
       units_.Clear();
       rpcId_ = 0;
       actorId_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -903,6 +1059,10 @@ namespace ETModel {
             ActorId = input.ReadInt64();
             break;
           }
+          case 752: {
+            Time = input.ReadInt64();
+            break;
+          }
         }
       }
     }
@@ -918,6 +1078,14 @@ namespace ETModel {
       get { return rpcId_; }
       set {
         rpcId_ = value;
+      }
+    }
+
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
       }
     }
 
@@ -959,8 +1127,12 @@ namespace ETModel {
         output.WriteInt32(RpcId);
       }
       if (Id != 0L) {
-        output.WriteRawTag(240, 5);
+        output.WriteRawTag(216, 5);
         output.WriteInt64(Id);
+      }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
       }
     }
 
@@ -968,6 +1140,9 @@ namespace ETModel {
       int size = 0;
       if (RpcId != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
+      }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
       }
       if (Id != 0L) {
         size += 2 + pb::CodedOutputStream.ComputeInt64Size(Id);
@@ -986,6 +1161,7 @@ namespace ETModel {
       z_ = 0;
       rpcId_ = 0;
       id_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1004,8 +1180,12 @@ namespace ETModel {
             RpcId = input.ReadInt32();
             break;
           }
-          case 752: {
+          case 728: {
             Id = input.ReadInt64();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -1026,10 +1206,22 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
         output.WriteInt32(RpcId);
+      }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
       }
     }
 
@@ -1038,11 +1230,15 @@ namespace ETModel {
       if (RpcId != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(RpcId);
       }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
       rpcId_ = 0;
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1051,6 +1247,10 @@ namespace ETModel {
             break;
           case 720: {
             RpcId = input.ReadInt32();
+            break;
+          }
+          case 752: {
+            Time = input.ReadInt64();
             break;
           }
         }
@@ -1087,6 +1287,14 @@ namespace ETModel {
       }
     }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (RpcId != 0) {
         output.WriteRawTag(208, 5);
@@ -1099,6 +1307,10 @@ namespace ETModel {
       if (Message.Length != 0) {
         output.WriteRawTag(226, 5);
         output.WriteString(Message);
+      }
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
       }
     }
 
@@ -1113,6 +1325,9 @@ namespace ETModel {
       if (Message.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(Message);
       }
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       return size;
     }
 
@@ -1120,6 +1335,7 @@ namespace ETModel {
       rpcId_ = 0;
       error_ = 0;
       message_ = "";
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1138,6 +1354,10 @@ namespace ETModel {
             Message = input.ReadString();
             break;
           }
+          case 752: {
+            Time = input.ReadInt64();
+            break;
+          }
         }
       }
     }
@@ -1148,21 +1368,41 @@ namespace ETModel {
     private static readonly pb::MessageParser<G2C_Test> _parser = new pb::MessageParser<G2C_Test>(() => new G2C_Test());
     public static pb::MessageParser<G2C_Test> Parser { get { return _parser; } }
 
+    private long time_;
+    public long Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
+      if (Time != 0L) {
+        output.WriteRawTag(240, 5);
+        output.WriteInt64(Time);
+      }
     }
 
     public int CalculateSize() {
       int size = 0;
+      if (Time != 0L) {
+        size += 2 + pb::CodedOutputStream.ComputeInt64Size(Time);
+      }
       return size;
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
+      time_ = 0;
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
             input.SkipLastField();
             break;
+          case 752: {
+            Time = input.ReadInt64();
+            break;
+          }
         }
       }
     }

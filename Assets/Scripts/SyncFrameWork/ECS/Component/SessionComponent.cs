@@ -18,6 +18,7 @@
 		public void Awake()
 		{
 			Instance = this;
+            ETModel.Game.Scene.AddComponent<LatencyComponent>();
 		}
 
 		public override void Dispose()

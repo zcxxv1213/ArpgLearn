@@ -14,6 +14,7 @@ namespace ETModel
         protected override void Run(Session session, UnitSnapshotMsg message)
         {
             Debug.Log("Handle");
+            ETModel.Game.Scene.GetComponent<LatencyComponent>().AddAMsgLan(message.Time - TimeHelper.GetCurrentTimeUnix());
             UnitComponent unitComponent = ETModel.Game.Scene.GetComponent<UnitComponent>();
             for (int i = 0; i < message.Units.Count; i++)
             {

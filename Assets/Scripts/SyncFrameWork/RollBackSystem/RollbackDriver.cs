@@ -427,19 +427,19 @@ namespace RollBack
 
 
 
-        void ReceiveRemoteHash(int remoteNCF, uint remoteHash, int remoteJLE, int remoteHost, int connectionId)
+        void ReceiveRemoteHash(int remoteNCF, uint remoteHash, int remoteJLE, int connectionId)
         {
             if (remoteNCF <= newestConsistentFrame)
-                DoHashCheck(remoteNCF, remoteHash, remoteJLE, remoteHost, connectionId);
+                DoHashCheck(remoteNCF, remoteHash, remoteJLE, connectionId);
             else
-                AddPendingHashCheck(remoteNCF, remoteHash, remoteJLE, remoteHost, connectionId);
+                AddPendingHashCheck(remoteNCF, remoteHash, remoteJLE, connectionId);
         }
 
-        void DoHashCheck(int remoteNCF, uint remoteHash, int remoteJLE, int remoteHost, int connectionId)
+        void DoHashCheck(int remoteNCF, uint remoteHash, int remoteJLE, int connectionId)
         {
             Debug.Assert(remoteNCF <= newestConsistentFrame);
 
-            if (remoteJLE != latestJoinLeaveEvent || remoteHost != GetCurrentHostId())
+            if (remoteJLE != latestJoinLeaveEvent)
                 return; // This hash is associated with a different branch of the game state
 
             uint localHash = GetHashForSnapshot(remoteNCF);
@@ -447,7 +447,7 @@ namespace RollBack
             if (localHash != remoteHash)
             {
                 // Log and transfer desync dump
-                HandleDesync(remoteNCF, remoteHash, remoteJLE, remoteHost, connectionId);
+                HandleDesync(remoteNCF, remoteHash, remoteJLE, connectionId);
             }
         }
 
@@ -457,7 +457,7 @@ namespace RollBack
         struct PendingHashCheck
         {
             public uint hash;
-            public int remoteJLE, remoteHost;
+            public int remoteJLE;
             public int connectionId;
         }
 
@@ -466,10 +466,10 @@ namespace RollBack
         readonly List<PendingHashCheck> pendingHashChecks = new List<PendingHashCheck>();
 
 
-        void AddPendingHashCheck(int remoteNCF, uint remoteHash, int remoteJLE, int remoteHost, int connectionId)
+        void AddPendingHashCheck(int remoteNCF, uint remoteHash, int remoteJLE, int connectionId)
         {
             pendingHashCheckFrames.Add(remoteNCF);
-            pendingHashChecks.Add(new PendingHashCheck { hash = remoteHash, remoteJLE = remoteJLE, remoteHost = remoteHost, connectionId = connectionId });
+            pendingHashChecks.Add(new PendingHashCheck { hash = remoteHash, remoteJLE = remoteJLE, connectionId = connectionId });
         }
 
         void RunPendingHashChecks()
@@ -481,7 +481,7 @@ namespace RollBack
                 if (pendingHashCheckFrames[i] <= newestConsistentFrame)
                 {
                     DoHashCheck(pendingHashCheckFrames[i],
-                            pendingHashChecks[i].hash, pendingHashChecks[i].remoteJLE, pendingHashChecks[i].remoteHost, pendingHashChecks[i].connectionId);
+                            pendingHashChecks[i].hash, pendingHashChecks[i].remoteJLE, pendingHashChecks[i].connectionId);
 
                     // Unordered removal:
                     int last = pendingHashCheckFrames.Count - 1;
@@ -607,7 +607,7 @@ namespace RollBack
         }
 
 
-        void HandleDesync(int remoteNCF, uint remoteHash, int remoteJLE, int remoteHost, int connectionId)
+        void HandleDesync(int remoteNCF, uint remoteHash, int remoteJLE, int connectionId)
         {
             // Try to reconstruct who was responsible:
             /*RemotePeer remotePeer = null;
@@ -915,18 +915,16 @@ namespace RollBack
             message.Write(GetHashForSnapshot(newestConsistentFrame));*/
         }
 
-        void ReceiveRemoteNCFAndJLE( int relativeToFrame)
+        void ReceiveRemoteNCFAndJLE(Unit u, int relativeToFrame, MessageReceiveRemoteNCFAndJLE message)
         {
             int receivedJLE = 1;
             int receivedNCF = 1;
-            int receivedHostId = 1;
             uint receivedHash = 1;
             try
             {
-               /* receivedNCF = message.ReadInt32();
-                receivedJLE = message.ReadInt32();
-                receivedHostId = message.ReadInt32();
-                receivedHash = message.ReadUInt32();*/
+                receivedNCF = message.ReceivedNCF;
+                receivedJLE = message.ReceivedJLE;
+                receivedHash = (uint)message.ReceivedHash;
             }
             catch (Exception e) { Debug.LogError("Bad NCF&JLE message"); }
 
@@ -938,9 +936,9 @@ namespace RollBack
             RemoteStatus remoteStatus = remoteStatuses[connectionId];
 
             // If the remote is on a different host's JLE stream, cannot trust their JLE# and, by extension, their NCF
-            if (receivedHostId != GetCurrentHostId())
+           /* if (receivedHostId != GetCurrentHostId())
                 return;
-
+                */
           //  Debug.Assert(!network.LocalPeerInfo.IsServer || receivedJLE <= latestJoinLeaveEvent); // <- If we're the server, clients should not be getting ahead!
 
             if (receivedJLE == latestJoinLeaveEvent) // <- sync with join/leave (clients can move NCF backwards on join/leave)
@@ -952,21 +950,17 @@ namespace RollBack
                     // At this point, the received hash is on the same branch of consistent frames (host and JLE), so we can test it
                     // Not bothering with old (out-of-order) hashes, as the relevant NCF may have been cleaned up at this point, and we'd have to test for that.
                    // ReceiveRemoteHash(receivedNCF, receivedHash, receivedJLE, receivedHostId, remotePeer.PeerInfo.ConnectionId);
-                    ReceiveRemoteHash(receivedNCF, receivedHash, receivedJLE, receivedHostId,1);
+                    ReceiveRemoteHash(receivedNCF, receivedHash, receivedJLE, connectionId);
                 }
             }
 
             if (remoteStatus.jle < receivedJLE) // <- updates are received out-of-order, so skip old data
                 remoteStatus.jle = receivedJLE;
+            //客户端默认覆盖            // Also keep SNCF updated
+            if (receivedJLE == latestJoinLeaveEvent)
+                if (serverNewestConsistentFrame < receivedNCF)
+                    serverNewestConsistentFrame = receivedNCF;
 
-
-            // Also keep SNCF updated
-           /* if (remotePeer.PeerInfo.IsServer)
-            {
-                if (receivedJLE == latestJoinLeaveEvent)
-                    if (serverNewestConsistentFrame < receivedNCF)
-                        serverNewestConsistentFrame = receivedNCF;
-            }*/
         }
         /// <summary>Clients can move their NCF back as far as the server's NCF on a join/leave event. Pair this call with an increment to <see cref="latestJoinLeaveEvent"/></summary>
         void ResetRemoteNCFs(int frame)
@@ -1156,21 +1150,22 @@ namespace RollBack
 
         /// <param name="inputBuffer">The input buffer to read into, or null to ignore the read data (seek through it)</param>
         /// <param name="endFrame">The frame following the final frame written.</param>
-        void ReceiveInputRLE(InputBuffer inputBuffer, int startFrame, out int endFrame)
+        void ReceiveInputRLE(InputBuffer inputBuffer, MessageInputRLE message, int startFrame, out int endFrame)
         {
             endFrame = startFrame;
-
+            int num = 0;
             while (true)
             {
                 int count = 0;
                 InputState inputState = InputState.Input0;
                 try
                 {
-                    //   count = (int)message.ReadUInt32(rleBits);
-                    count = 1;
+                    //有可能越界
+                    count = (int)message.Count[num];
                     if (count == 0) // Terminator
                         return;
-                 //   inputState = message.ReadInputState(inputBitsUsed);
+                    inputState = (InputState)message.Inputstate[num];
+                    num += 1;
                 }
                 catch (Exception e) { Debug.LogError("Bad input message (RLE)");  }
 
@@ -1190,10 +1185,11 @@ namespace RollBack
         void ReceiveInputRLEKnownLength(InputBuffer inputBuffer, int startFrame, int endFrame)
         {
             int actualEndFrame;
-            ReceiveInputRLE(inputBuffer, startFrame, out actualEndFrame);
+           //TODO 
+            // ReceiveInputRLE(inputBuffer, startFrame, out actualEndFrame);
 
-            if (actualEndFrame != endFrame)
-                Debug.LogError("RLE input length mismatch");
+           // if (actualEndFrame != endFrame)
+             //   Debug.LogError("RLE input length mismatch");
         }
 
 
@@ -1406,8 +1402,9 @@ namespace RollBack
         void ClientReceiveTimingPacket(int remoteCurrentFrame)
         {
             //计算RTT
-            // double rtt = messageForTiming.SenderConnection.AverageRoundtripTime;
-            double rtt = 0;
+           // double rtt = messageForTiming.SenderConnection.AverageRoundtripTime;
+            double rtt = ETModel.Game.Scene.GetComponent<LatencyComponent>().GetNowLatency();
+            Debug.Log("客户端记录当前RTT：" + rtt);
             if (rtt < 0)
             {
                 // Lidgren sets the RTT to -1 until it has enough data to initialise it. So if we get here, we don't have a RTT estimate for the server yet.
@@ -1535,7 +1532,7 @@ namespace RollBack
 
 
         /// <param name="endFrame">The frame following the final frame written.</param>
-        void ReceiveInputCoalesced(InputBuffer inputBuffer, int frame, out int endFrame)
+        void ReceiveInputCoalesced(InputBuffer inputBuffer, MessageInputCoalesced message, int frame, out int endFrame)
         {
             endFrame = frame;
 
@@ -1544,10 +1541,10 @@ namespace RollBack
             InputState lastInput = InputState.Input0;
             try
             {
-                /*firstInputCount = (int)message.ReadUInt32(coalescedInputBits);
+                firstInputCount = (int)message.FirstInputCount;
                 if (firstInputCount > 0)
-                    firstInput = message.ReadInputState(inputBitsUsed);
-                lastInput = message.ReadInputState(inputBitsUsed);*/
+                    firstInput = (InputState)message.FirstInput;
+                lastInput = (InputState)message.LastInput;
             }
             catch (Exception e) { Debug.LogError("Bad input message (coalesced)"); }
 
@@ -1586,14 +1583,14 @@ namespace RollBack
 
 
         /// <summary>Read an input message (with a header) into the given input buffer.</summary>
-        void ReceiveInputMessage( InputBuffer inputBuffer)
+        void ReceiveInputMessage(Unit u, InputBuffer inputBuffer, C2SCoalesceInput message)
         {
             bool isRLE = false;
             int frame = 1;
             try
             {
-              //  isRLE = message.ReadBoolean();
-             //   frame = message.ReadInt32();
+                isRLE = message.InputFormat != (int)InputFormat.Coalesced;
+                frame = message.StartFrame;
             }
             catch (Exception e) { Debug.LogError("Bad input message"); }
 
@@ -1606,12 +1603,22 @@ namespace RollBack
             int frameAfterRemoteCurrentFrame = 0;
             if (isRLE)
             {
-             //   ReceiveInputRLE(inputBuffer, message, frame, out frameAfterRemoteCurrentFrame);
+                //修改InputRLE
+                ReceiveInputRLE(inputBuffer, message.MyMessageInputRLE, frame, out frameAfterRemoteCurrentFrame);
             }
             else
             {
-              //  ReceiveInputCoalesced(inputBuffer, message, frame, out frameAfterRemoteCurrentFrame);
-              //  ReceiveRemoteNCFAndJLE(remotePeer, frame, message);
+                MessageInputCoalesced inputCoalesced = new MessageInputCoalesced();
+                inputCoalesced.FirstInput = message.FirstInputstateValue;
+                inputCoalesced.FirstInputCount = (int)message.FirstInputCount;
+                inputCoalesced.LastInput = message.LastInputstateValue;
+                ReceiveInputCoalesced(inputBuffer, inputCoalesced, frame, out frameAfterRemoteCurrentFrame);
+
+                MessageReceiveRemoteNCFAndJLE messageNCFAndJLE = new MessageReceiveRemoteNCFAndJLE();
+                messageNCFAndJLE.ReceivedJLE = message.LatestJoinLeaveEvent;
+                messageNCFAndJLE.ReceivedNCF = message.NewestConsistentFrame;
+                messageNCFAndJLE.ReceivedHash = (int)message.NCFSnapshot;
+                ReceiveRemoteNCFAndJLE(u, frame, messageNCFAndJLE);
             }
 
             if (frameAfterRemoteCurrentFrame - 1 > CurrentFrame + InputExcessFrontstop)
@@ -1619,11 +1626,9 @@ namespace RollBack
            //     RejectInputPastFrontstop(remotePeer);
                 return;
             }
-
-          /*  if (remotePeer.PeerInfo.IsServer)
-            {
-                ClientReceiveTimingPacket(frameAfterRemoteCurrentFrame - 1, message);
-            }*/
+            //客户端默认记录时间
+            ClientReceiveTimingPacket(frameAfterRemoteCurrentFrame - 1);
+           
         }
 
 
@@ -1648,20 +1653,22 @@ namespace RollBack
 
 
         #region Update
+        Dictionary<long, C2SCoalesceInput> listS2CCoalesceInput = new Dictionary<long, C2SCoalesceInput>();
 
         void ReadAllNetworkMessages()
         {
             //读取信息
-           /* foreach (var remotePeer in network.RemotePeers)
+            foreach (var v in mWorldEntity.mUnitList)
             {
-                InputBuffer inputBuffer = inputBuffers[remotePeer.PeerInfo.InputAssignment.GetFirstAssignedPlayerIndex()];
-
+                InputBuffer inputBuffer = inputBuffers[v.mInputAssignment.GetFirstAssignedPlayerIndex()];
+                C2SCoalesceInput message;
                 // IMPORANT NOTE: Do not access message.SenderConnection.Tag from any queued messages, as this
                 //                is a network-race-condition. Best simply not access it at all in the rollback driver!
-                NetIncomingMessage message;
-                while ((message = remotePeer.ReadMessage()) != null)
+                while ((message = v.ReadNetMessage()) != null)
                 {
-                    try
+                    listS2CCoalesceInput[v.Id] = message;
+                    ReceiveInputMessage(v, inputBuffer, message);
+                    /*try
                     {
                         if (message.DeliveryMethod == NetDeliveryMethod.ReliableUnordered && message.SequenceChannel == 0) // Input channel
                         {
@@ -1679,9 +1686,9 @@ namespace RollBack
                     catch (NetworkDataException exception)
                     {
                         network.NetworkDataError(remotePeer, exception);
-                    }
+                    }*/
                 }
-            }*/
+            }
         }
 
 

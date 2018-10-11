@@ -2,6 +2,7 @@
 {
 	public interface IMessage
 	{
+        long Time { get; set; }
 	}
 	
 	public interface IRequest: IMessage
@@ -21,5 +22,6 @@
 		public int Error { get; set; }
 		public string Message { get; set; }
 		public int RpcId { get; set; }
-	}
+        public long Time { get; set; }
+    }
 }

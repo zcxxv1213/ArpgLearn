@@ -5,6 +5,7 @@ message Actor_Test // IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
+	int64 Time = 94;
 	string Info = 1;
 }
 
@@ -12,6 +13,7 @@ message Actor_TestRequest // IActorRequest
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
+	int64 Time = 94;
 	string request = 1;
 }
 
@@ -20,6 +22,7 @@ message Actor_TestResponse // IActorResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 	string response = 1;
 }
 
@@ -27,6 +30,7 @@ message Actor_TransferRequest // IActorRequest
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
+	int64 Time = 94;
 	int32 MapIndex = 1;
 }
 
@@ -35,11 +39,13 @@ message Actor_TransferResponse // IActorResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 }
 
 message C2G_EnterMap // IRequest
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 }
 
 message G2C_EnterMap // IResponse
@@ -47,6 +53,7 @@ message G2C_EnterMap // IResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 	int64 UnitId = 1;
 	int32 Count  = 2;
 	repeated ActorVo ActorVOs = 3;
@@ -71,13 +78,15 @@ message Actor_CreateUnits // IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
+	int64 Time = 94;
     repeated UnitInfo Units = 1;
 }
 
 message Frame_ClickMap // IFrameMessage
 {
 	int32 RpcId = 90;
-	int64 Id = 94;
+	int64 Time = 94;
+	int64 Id = 91;
 	int32 X = 1;
 	int32 Z = 2;
 }
@@ -86,6 +95,7 @@ message Frame_ClickMap // IFrameMessage
 message C2R_Ping // IRequest
 {
 	int32 RpcId = 90;
+	int64 Time = 94;
 }
 
 message R2C_Ping // IResponse
@@ -93,8 +103,10 @@ message R2C_Ping // IResponse
 	int32 RpcId = 90;
 	int32 Error = 91;
 	string Message = 92;
+	int64 Time = 94;
 }
 
 message G2C_Test // IMessage
 {
+	int64 Time = 94;
 }

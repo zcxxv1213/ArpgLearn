@@ -4,6 +4,7 @@
 	message M2M_TrasferUnitRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		Unit Unit = 1;
 	}
 	
@@ -12,25 +13,28 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
-
+		int64 Time = 94;
 		int64 InstanceId = 1;
 	}
 	
 	message M2A_Reload // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 	}
 
 	message A2M_Reload // IResponse
 	{
 		int32 RpcId = 90;
 		int32 Error = 91;
+		int64 Time = 94;
 		string Message = 92;
 	}
 
 	message G2G_LockRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Id = 1;
 		string Address = 2;
 	}
@@ -40,11 +44,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message G2G_LockReleaseRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Id = 1;
 		string Address = 2;
 	}
@@ -54,12 +60,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message DBSaveRequest // IRequest
 	{
 		int32 RpcId = 90;
-
+		int64 Time = 94;
 		bool NeedCache = 1;
 		string CollectionName = 2;
 		ComponentWithId Component = 3;
@@ -71,12 +78,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message DBSaveBatchRequest // IRequest
 	{
 		int32 RpcId = 90;
-
+		int64 Time = 94;
 		bool NeedCache = 1;
 		string CollectionName = 2;
 		repeated ComponentWithId Components = 3;
@@ -87,11 +95,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message DBQueryRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Id = 1;
 		string CollectionName = 2;
 		bool NeedCache = 3;
@@ -102,6 +112,7 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 
 		ComponentWithId Component = 1;
 	}
@@ -109,6 +120,7 @@
 	message DBQueryBatchRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		string CollectionName = 1;
 		repeated int64 IdList = 2;
 		bool NeedCache = 3;
@@ -119,13 +131,14 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
-
+		int64 Time = 94;
 		repeated ComponentWithId Components = 1;
 	}
 
 	message DBQueryJsonRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		string CollectionName = 1;
 		string Json = 2;
 	}
@@ -135,6 +148,7 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 
 		repeated ComponentWithId Components = 1;
 	}
@@ -142,6 +156,7 @@
 	message ObjectAddRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Key = 1;
 		int64 InstanceId = 2;
 	}
@@ -151,11 +166,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message ObjectRemoveRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Key = 1;
 	}
 
@@ -164,11 +181,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message ObjectLockRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Key = 1;
 		int64 InstanceId = 2;
 		int Time = 3;
@@ -179,11 +198,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message ObjectUnLockRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Key = 1;
 		int64 OldInstanceId = 2;
 		int64 InstanceId = 3;
@@ -194,11 +215,13 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 	}
 
 	message ObjectGetRequest // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 Key = 1;
 	}
 
@@ -207,13 +230,14 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
-
+		int64 Time = 94;
 		int64 InstanceId = 1;
 	}
 
 	message R2G_GetLoginKey // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		string Account = 1;
 	}
 
@@ -222,13 +246,14 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
-
+		int64 Time = 94;
 		int64 Key = 1;
 	}
 
 	message G2M_CreateUnit // IRequest
 	{
 		int32 RpcId = 90;
+		int64 Time = 94;
 		int64 PlayerId = 1;
 		int64 GateSessionId = 2;
 	}
@@ -238,6 +263,7 @@
 		int32 RpcId = 90;
 		int32 Error = 91;
 		string Message = 92;
+		int64 Time = 94;
 
 		int64 UnitId = 1;
 		int Count = 2;
@@ -246,6 +272,7 @@
 	message G2M_SessionDisconnect // IActorMessage
 	{
 		int32 RpcId = 90;
-		long ActorId = 94;
+		long ActorId = 93;
+		int64 Time = 94;
 	}
 }

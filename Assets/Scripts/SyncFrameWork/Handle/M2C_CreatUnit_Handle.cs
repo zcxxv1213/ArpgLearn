@@ -14,6 +14,7 @@ namespace Assets.Scripts.SyncFrameWork.Handle
     {
         protected override async void Run(Session session, Actor_CreateUnits message)
         {
+            ETModel.Game.Scene.GetComponent<LatencyComponent>().AddAMsgLan(message.Time - TimeHelper.GetCurrentTimeUnix());
             Debug.Log("CreatUnit");
             UnitComponent unitComponent = ETModel.Game.Scene.GetComponent<UnitComponent>();
 
