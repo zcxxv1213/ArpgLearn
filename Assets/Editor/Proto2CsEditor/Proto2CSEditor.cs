@@ -26,7 +26,7 @@ namespace ETEditor
 		public static void AllProto2CS()
 		{
 			// InnerMessage.proto生成cs代码
-			//InnerProto2CS.Proto2CS();
+			InnerProto2CS.Proto2CS();
 			
 			msgOpcode.Clear();
 			Proto2CS("ETModel", "OuterMessage.proto", clientMessagePath, "OuterOpcode", 100);

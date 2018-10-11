@@ -18,7 +18,7 @@ namespace ETEditor
 	public static class InnerProto2CS
 	{
 		private const string protoPath = "Assets/Proto/";
-		private const string serverMessagePath = "../Server/Hotfix/Module/Message/";
+		private const string serverMessagePath = "Assets/Scripts/Module/Message/Hotfix/";
 		private static readonly char[] splitChars = { ' ', '\t' };
 		private static readonly List<OpcodeInfo> msgOpcode = new List<OpcodeInfo>();
 		
