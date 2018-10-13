@@ -86,6 +86,7 @@ namespace ETModel
         {
             //
             //Update RollBack System Send Input
+            Debug.Log("DeltaTime: " + deltaTime);
             mWorldEntity.GetComponent<RollBack.RollbackDriver>().Update(deltaTime);
         }
 

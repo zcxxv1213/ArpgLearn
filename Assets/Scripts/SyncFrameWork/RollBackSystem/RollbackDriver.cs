@@ -1335,7 +1335,7 @@ namespace RollBack
             {
                 game.BeforePrediction();
                 //TODO 反序列化
-             //   game.Deserialize(snapshotBuffer[predictionDirtyFrame - 1]);
+                game.Deserialize(snapshotBuffer[predictionDirtyFrame - 1]);
             }
 
 
@@ -1350,7 +1350,7 @@ namespace RollBack
                 // Save the state that we predicted (so we can reload and predict from it later)
                 // TODO: Pool the snapshot objects that we are replacing here!
                 //反序列化
-              //  snapshotBuffer[frame] = game.Serialize();
+                snapshotBuffer[frame] = game.Serialize();
                 hashBuffer.Remove(frame);
             }
 
@@ -1388,7 +1388,7 @@ namespace RollBack
             //   ClientReceiveTimingPacket(serverCurrentFrame, messageForTiming);
             ClientReceiveTimingPacket(serverCurrentFrame);
             //不知道是否正确
-            packetTimeTracker.Update(Time.time);
+            packetTimeTracker.Update(ETModel.Game.Scene.GetComponent<TimeTrackerComponent>().GetNowTime());
 
             CurrentFrame = Math.Max(serverCurrentFrame, (int)Math.Round(packetTimeTracker.DesiredCurrentFrame));
             CurrentSimulationFrame = Math.Max(serverCurrentFrame, CurrentFrame - LocalFrameDelay);
@@ -1436,7 +1436,7 @@ namespace RollBack
          //   Debug.Assert(network.IsApplicationConnected);
           ///  Debug.Assert(!network.IsServer);
 
-            packetTimeTracker.Update(Time.time);
+            packetTimeTracker.Update(ETModel.Game.Scene.GetComponent<TimeTrackerComponent>().GetNowTime());
             synchronisedClock.Update(elapsedTime);
         }
 
@@ -1781,7 +1781,7 @@ namespace RollBack
                 Debug.Assert(!snapshotBuffer.ContainsKey(CurrentSimulationFrame)); // First time adding this frame
                 Debug.Assert(!hashBuffer.ContainsKey(CurrentSimulationFrame)); // First time adding this frame
                 //反序列化
-                //snapshotBuffer[CurrentSimulationFrame] = game.Serialize();
+                snapshotBuffer[CurrentSimulationFrame] = game.Serialize();
             }
         }
 

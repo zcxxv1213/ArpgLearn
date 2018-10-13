@@ -27,6 +27,7 @@ namespace ETModel
 
         public InputState mNowInpuState = InputState.None;
         public InputAssignment mInputAssignment { get; set; }
+        List<KeyCode> allInputList = new List<KeyCode>();
         public VInt3 IntPos;
         private string mName;
 		public GameObject GameObject;
@@ -91,7 +92,17 @@ namespace ETModel
         public void AddInputStateWithFrame(InputState state)
         {
             mNowInpuState = state;
-            mFrameWithInputDic[mRollebackDriver.CurrentFrame] = state;
+       //     mFrameWithInputDic[mRollebackDriver.CurrentFrame] = state;
+        }
+
+        public void UpdateInput(InputState state)
+        {
+            KeyCode code = InputHelper.GetKeyCodeByInputState(state);
+            allInputList.Add(code);
+            if (code == KeyCode.UpArrow)
+            {
+                this.Position = new Vector3(this.Position.x, this.Position.y, this.Position.z + 1);
+            }
         }
 
         public void SetRollBackDriver(RollbackDriver d)

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEngine;
 
 namespace ETModel
 {
@@ -55,7 +56,12 @@ namespace ETModel
 
         public void Update(MultiInputState input, bool firstTimeSimulated)
         {
-
+            foreach (var v in players)
+            {
+                InputState state = input[v.mInputAssignment.GetFirstAssignedPlayerIndex()];
+                Debug.Log("InpuState: " + state + "   " + "PlayerID" + v.mPlayerID);
+                v.UpdateInput(state);
+            }
         }
 
         #region Serialization
@@ -65,7 +71,7 @@ namespace ETModel
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
             bw.Write(frame);
-
+            Debug.Log("反序列化 Frame " + frame);
             for (int i = 0; i < players.Length; i++)
             {
                 if (bw.WriteBoolean(players[i] != null))
@@ -76,7 +82,7 @@ namespace ETModel
             return ms.ToArray();
         }
 
-        public void DeSerialize(byte[] data)
+        public void Deserialize(byte[] data)
         {
             MemoryStream ms = new MemoryStream(data);
             BinaryReader br = new BinaryReader(ms);
