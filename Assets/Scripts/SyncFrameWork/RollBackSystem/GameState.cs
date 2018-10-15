@@ -56,10 +56,11 @@ namespace ETModel
 
         public void Update(MultiInputState input, bool firstTimeSimulated)
         {
+            frame++;
             foreach (var v in players)
             {
                 InputState state = input[v.mInputAssignment.GetFirstAssignedPlayerIndex()];
-                Debug.Log("InpuState: " + state + "   " + "PlayerID" + v.mPlayerID);
+                Debug.Log("InpuState: " + state + "   " + "PlayerID" + v.mPlayerID + "CurrentFrame" + frame);
                 v.UpdateInput(state);
             }
         }
