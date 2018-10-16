@@ -35,7 +35,7 @@ namespace Assets.Scripts.SyncFrameWork.Handle
             }
             //Add FrameCompoont SendStart proto
             //TODO CHECK NET STATES AND SET FREAME TYPE
-            Game.Scene.AddComponent<LockFrameComponent>();
+            //Game.Scene.AddComponent<LockFrameComponent>();
             M2C_ReadyStartGame response = (M2C_ReadyStartGame)await ETModel.SessionComponent.Instance.Session.Call(new C2M_ReadyStartGame() { });
             Debug.Log(response.Message);
         //    Game.Scene.GetComponent<LockFrameComponent>().StartGame(); 

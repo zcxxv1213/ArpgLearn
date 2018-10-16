@@ -56,8 +56,14 @@ namespace ETModel
 				this.Network.Remove(id); 
 			};
 			channel.ReadCallback += this.OnRead;
-            mLatencyComponent = ETModel.Game.Scene.AddComponent<LatencyComponent>();
-
+            if (ETModel.Game.Scene.GetComponent<LatencyComponent>() == null)
+            {
+                mLatencyComponent = ETModel.Game.Scene.AddComponent<LatencyComponent>();
+            }
+            else
+            {
+                mLatencyComponent = ETModel.Game.Scene.GetComponent<LatencyComponent>();
+            }
             this.channel.Start();
 		}
 		public override void Dispose()

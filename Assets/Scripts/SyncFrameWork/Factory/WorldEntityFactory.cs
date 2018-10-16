@@ -7,7 +7,7 @@ namespace ETModel {
     {
         public static WorldEntity Create()
         {
-            WorldManagerComponent worldManagerComponent = Game.Scene.GetComponent<WorldManagerComponent>();
+            WorldManagerComponent worldManagerComponent = ETModel.Game.Scene.GetComponent<WorldManagerComponent>();
             WorldEntity worldEntity = ComponentFactory.Create<WorldEntity>();
             worldManagerComponent.AddWorld(worldEntity);
             return worldEntity;
