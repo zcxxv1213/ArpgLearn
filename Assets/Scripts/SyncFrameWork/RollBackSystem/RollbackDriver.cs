@@ -1471,29 +1471,32 @@ namespace RollBack
             if (!coalescedInput.HasValue || coalescedInput.Value != inputState || coalescedInputCount == coalescedInputMaxCount)
             {
                 // Send:
-                C2SCoalesceInput mS2CMsg = new C2SCoalesceInput();
+                C2SCoalesceInput mC2SMsg = new C2SCoalesceInput();
                 if (coalescedInput > 0)
                 {
-                    mS2CMsg.InputFormat = (int)InputFormat.Coalesced;
-                    mS2CMsg.StartFrame = CurrentFrame - coalescedInputCount;
-                    mS2CMsg.FirstInputCount = (uint)coalescedInputCount;
-                    mS2CMsg.FirstInputstateValue = (int)coalescedInput.Value;
-                    mS2CMsg.LastInputstateValue = (int)inputState;
-                    mS2CMsg.NewestConsistentFrame = newestConsistentFrame;
-                    mS2CMsg.LatestJoinLeaveEvent = latestJoinLeaveEvent;
-                    mS2CMsg.NCFSnapshot = GetHashForSnapshot(newestConsistentFrame);
+                    mC2SMsg.InputFormat = (int)InputFormat.Coalesced;
+                    mC2SMsg.StartFrame = CurrentFrame - coalescedInputCount;
+                    mC2SMsg.FirstInputCount = (uint)coalescedInputCount;
+                    mC2SMsg.FirstInputstateValue = (int)coalescedInput.Value;
+                    mC2SMsg.LastInputstateValue = (int)inputState;
+                    mC2SMsg.NewestConsistentFrame = newestConsistentFrame;
+                    mC2SMsg.LatestJoinLeaveEvent = latestJoinLeaveEvent;
+                    mC2SMsg.NCFSnapshot = GetHashForSnapshot(newestConsistentFrame);
                 }
                 else
                 {
-                    mS2CMsg.InputFormat = (int)InputFormat.Coalesced;
-                    mS2CMsg.StartFrame = CurrentFrame - coalescedInputCount;
-                    mS2CMsg.FirstInputCount = (uint)coalescedInputCount;
-                    mS2CMsg.LastInputstateValue = (int)inputState;
-                    mS2CMsg.NewestConsistentFrame = newestConsistentFrame;
-                    mS2CMsg.LatestJoinLeaveEvent = latestJoinLeaveEvent;
-                    mS2CMsg.NCFSnapshot = GetHashForSnapshot(newestConsistentFrame);
+                    mC2SMsg.InputFormat = (int)InputFormat.Coalesced;
+                    mC2SMsg.StartFrame = CurrentFrame - coalescedInputCount;
+                    mC2SMsg.FirstInputCount = (uint)coalescedInputCount;
+                    mC2SMsg.LastInputstateValue = (int)inputState;
+                    mC2SMsg.NewestConsistentFrame = newestConsistentFrame;
+                    mC2SMsg.LatestJoinLeaveEvent = latestJoinLeaveEvent;
+                    mC2SMsg.NCFSnapshot = GetHashForSnapshot(newestConsistentFrame);
                 }
-                ETModel.Game.Scene.GetComponent<ETModel.SessionComponent>().Session.Send(mS2CMsg);
+                if (SimulateHelper.simulateState == SimulateHelper.SimulateState.online)
+                    ETModel.Game.Scene.GetComponent<ETModel.SessionComponent>().Session.Send(mC2SMsg);
+                else
+                    ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit().QueueMessage(mC2SMsg);
                 //this.Dispatch<List<Unit>, S2CCoalesceInput>(EventConstant.SEND_OR_COALESCE_INPUT, mWorldEntity.mUnitList, mS2CMsg);
                 if (!debugDisableInputBroadcast)
                  //   network.Broadcast(message, NetDeliveryMethod.ReliableUnordered, 0);

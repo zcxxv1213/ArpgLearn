@@ -30,10 +30,13 @@ namespace ETModel
         }
         private void CaculateLatency()
         {
-            mNowAverageLatency = mAddTime / messageNum;
-            Debug.Log("当前1s内平均服务器到客户端延时为:  " + mNowAverageLatency);
-            messageNum = 0;
-            mAddTime = 0;
+            if (messageNum != 0)
+            {
+                mNowAverageLatency = mAddTime / messageNum;
+                Debug.Log("当前1s内平均服务器到客户端延时为:  " + mNowAverageLatency);
+                messageNum = 0;
+                mAddTime = 0;
+            }
         }
 
         public long GetNowLatency()
@@ -43,8 +46,9 @@ namespace ETModel
         public void AddAMsgLan(long t)
         {
             //注意如果t是毫秒
-            Debug.Log(t);
+            Debug.Log("Add Latency Message : Time = " + t);
             mAddTime += t;
+            messageNum += 1;
         }
     }
 }

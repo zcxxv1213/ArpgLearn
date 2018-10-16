@@ -56,7 +56,7 @@ namespace ETModel
 				this.Network.Remove(id); 
 			};
 			channel.ReadCallback += this.OnRead;
-            mLatencyComponent = ETModel.Game.Scene.GetComponent<LatencyComponent>();
+            mLatencyComponent = ETModel.Game.Scene.AddComponent<LatencyComponent>();
 
             this.channel.Start();
 		}
@@ -152,6 +152,7 @@ namespace ETModel
 			{
 				OpcodeTypeComponent opcodeTypeComponent = this.Network.Entity.GetComponent<OpcodeTypeComponent>();
 				object instance = opcodeTypeComponent.GetInstance(opcode);
+                Log.Info(opcode.ToString());
 				message = this.Network.MessagePacker.DeserializeFrom(instance, packet.Stream);
 				//Log.Debug($"recv: {JsonHelper.ToJson(message)}");
 			}
@@ -165,7 +166,7 @@ namespace ETModel
 			}
 				
 			IResponse response = message as IResponse;
-            mLatencyComponent.AddAMsgLan(response.Time - TimeHelper.GetCurrentTimeUnix());
+            mLatencyComponent.AddAMsgLan(TimeHelper.GetCurrentTimeUnix() - response.Time);
 
 
             if (response == null)
@@ -195,7 +196,8 @@ namespace ETModel
 					{
 						throw new RpcException(response.Error, response.Message);
 					}
-                    mLatencyComponent.AddAMsgLan(response.Time - TimeHelper.GetCurrentTimeUnix());
+                    Log.Info("RemoteTime = " + response.Time + "Local Time = " + TimeHelper.GetCurrentTimeUnix());
+                    mLatencyComponent.AddAMsgLan(TimeHelper.GetCurrentTimeUnix() - response.Time);
                     tcs.SetResult(response);
 				}
 				catch (Exception e)
@@ -204,7 +206,8 @@ namespace ETModel
 				}
 			};
 			request.RpcId = rpcId;
-			this.Send(0x00, request);
+            request.Time = TimeHelper.GetCurrentTimeUnix();
+            this.Send(0x00, request);
 			return tcs.Task;
 		}
 
@@ -221,7 +224,7 @@ namespace ETModel
 					{
 						throw new RpcException(response.Error, response.Message);
 					}
-                    mLatencyComponent.AddAMsgLan(response.Time - TimeHelper.GetCurrentTimeUnix());
+                    mLatencyComponent.AddAMsgLan( TimeHelper.GetCurrentTimeUnix() - response.Time);
                     tcs.SetResult(response);
 				}
 				catch (Exception e)
@@ -233,7 +236,8 @@ namespace ETModel
 			cancellationToken.Register(() => this.requestCallback.Remove(rpcId));
 
 			request.RpcId = rpcId;
-			this.Send(0x00, request);
+            request.Time = TimeHelper.GetCurrentTimeUnix();
+            this.Send(0x00, request);
 			return tcs.Task;
 		}
 
@@ -249,8 +253,8 @@ namespace ETModel
 			{
 				throw new Exception("session已经被Dispose了");
 			}
-
-			this.Send(0x01, message);
+            message.Time = TimeHelper.GetCurrentTimeUnix();
+            this.Send(0x01, message);
 		}
 
 		public void Send(byte flag, IMessage message)
