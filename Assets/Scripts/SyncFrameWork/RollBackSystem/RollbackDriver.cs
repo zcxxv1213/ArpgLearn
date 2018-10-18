@@ -1433,11 +1433,13 @@ namespace RollBack
 
         void ClientUpdateTiming(double elapsedTime)
         {
-         //   Debug.Assert(network.IsApplicationConnected);
-          ///  Debug.Assert(!network.IsServer);
-
+            Debug.Log("Update1");
+            //   Debug.Assert(network.IsApplicationConnected);
+            //  Debug.Assert(!network.IsServer);
             packetTimeTracker.Update(ETModel.Game.Scene.GetComponent<TimeTrackerComponent>().GetNowTime());
+            Debug.Log("Update2");
             synchronisedClock.Update(elapsedTime);
+            Debug.Log("Update3");
         }
 
         #endregion
@@ -1693,46 +1695,105 @@ namespace RollBack
                 }
             }
         }
+        /// <summary>
+        /// hostForJLE的值服务器是0，其他为客户端Unit的ID
+        /// </summary>
+        void StartOnServer()
+        {
+            byte[] initialSnapshot = game.Serialize();
+            snapshotBuffer.Add(0, initialSnapshot);
+            Debug.Assert(hashBuffer.Count == 0);
 
+            Debug.Log("First snapshot size = " + initialSnapshot.Length + " bytes");
+            Unit u = ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit();
+            hostForJLE.Add(0, (int)u.mPlayerID);
 
+            // Add ourselves to the game:
+            Debug.Assert(latestJoinLeaveEvent == 0);
+            Debug.Assert(serverNewestConsistentFrame == 0);
+            JoinLeaveEvent jle = ServerCreateJoinEvent(1, u);
+            ApplyJoinLeaveEvent(jle);
+        }
+
+        JoinLeaveEvent ServerCreateJoinEvent(int frame, Unit u)
+        {
+            return ServerCreateJoinLeaveEvent(frame, (int)u.mInputAssignment, u.name, u.GetNowPlayerData());
+        }
+
+        /// <param name="joiningPlayerName">The name of a joining player, or null for a leaving player</param>
+        JoinLeaveEvent ServerCreateJoinLeaveEvent(int frame, int inputIndex, string joiningPlayerName, byte[] joiningPlayerData)
+        {
+            return new JoinLeaveEvent(latestJoinLeaveEvent + 1, serverNewestConsistentFrame, frame, inputIndex, joiningPlayerName, joiningPlayerData);
+        }
+        void ApplyJoinLeaveEvent(JoinLeaveEvent jle)
+        {
+            Debug.Assert(jle.eventId > 0);
+            Debug.Assert(latestJoinLeaveEvent == 0 || jle.eventId == latestJoinLeaveEvent + 1); // events are contiguious
+            Debug.Assert(jle.consistentFrame >= serverNewestConsistentFrame);
+            Debug.Assert(SimulateHelper.simulateState != SimulateHelper.SimulateState.online || jle.consistentFrame == serverNewestConsistentFrame);
+
+            latestJoinLeaveEvent = jle.eventId;
+            serverNewestConsistentFrame = jle.consistentFrame;
+
+            // Cannot be consistent at or after the join/leave frame (so push NCFs backwards)
+            if (SimulateHelper.simulateState != SimulateHelper.SimulateState.online)
+                ResetLocalNCF(jle.frame - 1);
+            ResetRemoteNCFs(jle.frame - 1);
+
+            joinLeaveEvents.Add(jle);
+            AppendOnlineStateChange(jle.eventId, jle.inputIndex, jle.frame, jle.joiningPlayerName, jle.joiningPlayerData);
+            MarkPredictionDirty(jle.frame);
+
+            if (jle.joiningPlayerName != null)
+                Debug.Log("Applying JLE#" + jle.eventId + " as Join (input " + jle.inputIndex + ") at frame " + jle.frame + " (consistent at " + jle.consistentFrame + ") for player \"" + jle.joiningPlayerName + "\"");
+            else
+                Debug.Log("Applying JLE#" + jle.eventId + " as Leave (input " + jle.inputIndex + ") at frame " + jle.frame + " (consistent at " + jle.consistentFrame + ")");
+        }
 
         /// <summary>Important: Call P2PNetwork.Update before calling this method.</summary>
         public void Update(double elapsedTime)
         {
-           /* if (!network.IsApplicationConnected)
-                return; // Nothing to do!*/
-
+            /* if (!network.IsApplicationConnected)
+                 return; // Nothing to do!*/
             // This is a suitable proxy for "have we started running" on both client and server:
+            if (SimulateHelper.simulateState == SimulateHelper.SimulateState.local && latestJoinLeaveEvent == 0)
+            {
+                this.StartOnServer();
+            }
             Debug.Assert(latestJoinLeaveEvent > 0);
 
             try
             {
                 ReadAllNetworkMessages();
-
                 CheckRemoteNCFAndJLEBackstop();
-
                 DoPrediction();
-
                 UpdateNewestConsistentFrame();
 
                 /* if (network.IsServer)
                  {
                      Tick(unnetworkedInputs);
                  }*/
-                ClientUpdateTiming(elapsedTime);
-
-                // Check we're not about to flood the network.
-                // Note: This limit is still quite high. Could do fancy things like RLE so we don't send
-                //       a huge number of packets when approaching this limit. But probably not worth it.
-                if (CurrentFrame < synchronisedClock.CurrentFrame - InputBroadcastFloodLimit)
+                if (SimulateHelper.simulateState == SimulateHelper.SimulateState.local)
                 {
-                  //  network.Disconnect(UserVisibleStrings.GameClockOutOfSync);
-                    return;
-                }
-                //发送当前操作
-                while (CurrentFrame < synchronisedClock.CurrentFrame)
                     Tick(mWorldEntity.GetMainUnit().mNowInpuState);
+                }
+                else
+                {
+                    ClientUpdateTiming(elapsedTime);
+                    // Check we're not about to flood the network.
+                    // Note: This limit is still quite high. Could do fancy things like RLE so we don't send
+                    //       a huge number of packets when approaching this limit. But probably not worth it.
+                    if (CurrentFrame < synchronisedClock.CurrentFrame - InputBroadcastFloodLimit)
+                    {
+                        Debug.Log("CurrentFrame:" + CurrentFrame + "   " + "synchronisedClock.currentFrame : " + synchronisedClock.CurrentFrame + "InputBroadcastFloodLimit" + InputBroadcastFloodLimit);
+                        //  network.Disconnect(UserVisibleStrings.GameClockOutOfSync);
+                        return;
+                    }
+                    //发送当前操作
+                    while (CurrentFrame < synchronisedClock.CurrentFrame)
+                        Tick(mWorldEntity.GetMainUnit().mNowInpuState);
 
+                }
                 CleanupBuffers();
             }
             catch (Exception e) { return; } // The network disconnected us
@@ -1766,6 +1827,7 @@ namespace RollBack
         /// <param name="displayToUser">True if this is the final tick we are going to do during the update (ie: it will draw)</param>
         void Tick(InputState input)
         {
+            Debug.Log(input);
             // Advance input:
             CurrentFrame++;
             ExtractAndBroadcastLocalInput(input);

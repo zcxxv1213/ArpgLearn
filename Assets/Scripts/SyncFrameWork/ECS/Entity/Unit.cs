@@ -115,6 +115,14 @@ namespace ETModel
             bw.Write(this.mPlayerIndex);
         }
 
+        public byte[] GetNowPlayerData()
+        {
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+            this.Serialize(bw);
+            return ms.ToArray();
+        }
+
         public void DeSerialize(BinaryReader br)
         {
             this.mPlayerIndex = br.ReadInt32();

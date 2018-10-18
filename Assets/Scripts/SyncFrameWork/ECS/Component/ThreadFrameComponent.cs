@@ -14,7 +14,7 @@ namespace ETModel
             self.Awake();
         }
     }
-
+    [ObjectSystem]
     public class ThreadFrameUpdateComponentSystem : UpdateSystem<ThreadFrameComponent>
     {
         public override void Update(ThreadFrameComponent self)
@@ -92,17 +92,18 @@ namespace ETModel
 
         public void Update()
         {
+        //    Debug.Log("Update");
             if (firstUpdate)
             {
                 firstUpdate = false;
-                elapsedTime = Time.time - mTime;
+                //elapsedTime = Time.time - mTime;
                 mTime = Time.time;
                 //Update;
-                UpdateWorld(elapsedTime);
+                UpdateWorld(s_intervalTime/1000);
             }
             else
             {
-                if ((Time.time - mTime) > s_intervalTime)
+                if ((Time.time - mTime) > s_intervalTime / 1000)
                 {
                     //Update;
                     elapsedTime = Time.time - mTime;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RollBack
 {
@@ -135,7 +136,9 @@ namespace RollBack
             UpdatePanicLevelAndCorrectionRate(elapsedTime);
 
             // Now advance time, taking into account the correction rate
+         
             frameTimeAccumulator += elapsedTime * TimerCorrectionRate;
+            Debug.Log(TimerCorrectionRate + "   " + frameTimeAccumulator);
             while (frameTimeAccumulator >= RollbackDriver.FrameTime.TotalSeconds)
             {
                 frameTimeAccumulator -= RollbackDriver.FrameTime.TotalSeconds;

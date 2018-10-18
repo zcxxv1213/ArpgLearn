@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 namespace ETModel
 {
+    [ObjectSystem]
     public class InputComponentUpdateSystem : UpdateSystem<InputComponent>
     {
         public override void Update(InputComponent self)
@@ -20,7 +21,6 @@ namespace ETModel
         //TODO加限制不可以一直做检测
         public void Update()
         {
-            
             ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit().AddInputStateWithFrame(InputHelper.GetInputStateByOperation());
             /*if (Input.GetKeyDown(KeyCode.UpArrow))
             {

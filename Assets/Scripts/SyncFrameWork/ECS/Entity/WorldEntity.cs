@@ -27,6 +27,7 @@ namespace ETModel
             this.AddComponent<WorldManagerComponent>();
             this.AddComponent<RollbackDriver>();
             this.GetComponent<RollbackDriver>().SetWorldEntity(this);
+            this.SetGameState(new GameState());
         }
 
         public void SetMainUnit(Unit u)

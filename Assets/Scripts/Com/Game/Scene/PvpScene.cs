@@ -39,6 +39,7 @@ namespace Assets.Scripts.Com.Game.Module.Scene
             }
             ThreadEntity threadEntity = ThreadEntityFactory.Create();
             threadEntity.InitWorldEntity(worldEntity);
+            mScene.AddComponent<InputComponent>();
             CameraController.Instance.OnEnterBattleScene();
         }
         public override void BeforeExitScene()
