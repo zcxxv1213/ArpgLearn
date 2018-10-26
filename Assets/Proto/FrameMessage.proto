@@ -79,10 +79,10 @@ message JoinEvent //IActorMessage
 	int32 RpcId = 90;
 	int64 ActorId = 93;
 	int64 Time = 94;
-	repeated JoinLeaveEvent events = 1;
+	repeated JoinLeaveEventMessage events = 1;
 }
 
-message JoinLeaveEvent //IActorMessage
+message JoinLeaveEventMessage //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
@@ -91,21 +91,37 @@ message JoinLeaveEvent //IActorMessage
 	int32 ConsistentFrame = 2;
 	uint32 FrameSubConsistemtFrame = 3;
 	int32 InputIndex = 4;
-	int32 IfJoiningPlayerName = 5;
+	bool IfJoiningPlayerName = 5;
 	string JoiningPlayerName = 6;
 	bytes JoiningPlayerData = 7;
+	repeated int32 Inputstate = 8;
 }
 
-message OnlineState //IActorMessage
+message ConnectMessage //IActorMessage
+{
+	int32 RpcId = 90;
+	int64 ActorId = 93;
+	int64 Time = 94;
+	JoinLeaveEventMessage mConnectJLEMessage = 1;
+	int32 SnapShotLength = 2;
+	bytes SnapShotBytes = 3;
+	OnlineStateBuffer mOnlineStateBuffer = 4;
+
+}
+
+message OnlineStateBuffer //IActorMessage
 {
 	int32 RpcId = 90;
 	int64 ActorId = 93;
 	int64 Time = 94;
 	int32 LastJoinFrame = 1;
-	repeated int32 ConsistentFrame = 2;
-	repeated string JoinPlayerName = 3;
-	repeated bytes JoinPlayerData = 4;
-	int32 Terminator = 5;
+	string mJoinPlayerName = 2;
+	bytes mJoinPlayerData = 3;
+	repeated int32 ConsistentFrame = 4;
+	repeated string JoinPlayerName = 5;
+	repeated bytes JoinPlayerData = 6;
+	int32 Terminator = 7;
+	MessageInputRLE MyMessageInputRLE = 8;
 }
 
 message InputHeader //IActorMessage

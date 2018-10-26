@@ -554,21 +554,32 @@ namespace RollBack
                 }
             }
 
-            /*
-            public void WriteToNetworkNoEventId(NetOutgoingMessage message)
+            
+            public void WriteToNetworkNoEventId(JoinLeaveEventMessage message)
             {
                 Debug.Assert(frame > consistentFrame);
-                message.Write(consistentFrame);
-                message.WriteVariableUInt32((uint)(frame - consistentFrame));
+                message.ConsistentFrame = consistentFrame;
+                message.FrameSubConsistemtFrame = (uint)(frame - consistentFrame);
+               // message.WriteVariableUInt32((uint)(frame - consistentFrame));
+
                 Debug.Assert(InputAssignmentExtensions.MaxPlayerInputAssignments < (1 << inputIndexBits));
-                message.Write((byte)inputIndex, inputIndexBits);
-                message.Write(joiningPlayerName != null);
+                message.InputIndex = inputIndex;
+              //  message.Write((byte)inputIndex, inputIndexBits);
+               // message.Write(joiningPlayerName != null);
+                message.IfJoiningPlayerName = joiningPlayerName != null;
                 if (joiningPlayerName != null)
                 {
-                    message.Write(joiningPlayerName);
-                    message.WriteByteArray(joiningPlayerData);
+                    message.JoiningPlayerName = joiningPlayerName;
+                    // message.Write(joiningPlayerName);
+                    // message.WriteByteArray(joiningPlayerData);
+                    message.JoiningPlayerData = Google.Protobuf.ByteString.CopyFrom(joiningPlayerData);
                 }
-            }*/
+            }
+            public void WriteToNetwork(JoinLeaveEventMessage message)
+            {
+                message.EventId = eventId;
+                WriteToNetworkNoEventId(message);
+            }
 
         }
         #endregion Join/Leave Events
@@ -1031,7 +1042,7 @@ namespace RollBack
 
         /// <summary>Write the online state buffer for a given consistent frame onwards, as well as input buffer fix-ups for any "offline" events.</summary>
         /// <remarks>Any input indices online before the consistent frame have their online state clamped to the consistent frame.</remarks>
-        void WriteOnlineStateBuffer( int consistentFrame)
+        void WriteOnlineStateBuffer(ConnectMessage message, int consistentFrame)
         {
             for (int b = 0; b < onlineStateBuffers.Length; b++)
             {
@@ -1043,42 +1054,48 @@ namespace RollBack
                 int frame = onlineStateBuffers[b].TryGetLastBeforeOrAtFrame(consistentFrame, out onlineState, out i);
                 if (i >= 0 && onlineState.Online)
                 {
+                    lastJoinFrame = consistentFrame;
+                    message.MOnlineStateBuffer.LastJoinFrame = lastJoinFrame;
+                    message.MOnlineStateBuffer.MJoinPlayerName = onlineState.JoiningPlayerName;
+                    message.MOnlineStateBuffer.MJoinPlayerData = Google.Protobuf.ByteString.CopyFrom(onlineState.JoiningPlayerData);
                     // Clamp written entries to the consistentcy point (so that written input fix-ups for leaves work)
-                   /* message.Write(lastJoinFrame = consistentFrame);
-                    message.Write(onlineState.JoiningPlayerName);
-                    message.WriteByteArray(onlineState.JoiningPlayerData);*/
+                    /* message.Write(lastJoinFrame = consistentFrame);
+                     message.Write(onlineState.JoiningPlayerName);
+                     message.WriteByteArray(onlineState.JoiningPlayerData);*/
                 }
 
                 for (++i; i < onlineStateBuffers[b].Count; i++)
                 {
                  //   WriteOnlineStateRecursiveHelper(b, onlineStateBuffers[b].Keys[i], onlineStateBuffers[b].Values[i], message, ref lastJoinFrame);
-                    WriteOnlineStateRecursiveHelper(b, onlineStateBuffers[b].Keys[i], onlineStateBuffers[b].Values[i], ref lastJoinFrame);
+                    WriteOnlineStateRecursiveHelper(b, onlineStateBuffers[b].Keys[i], onlineStateBuffers[b].Values[i],message, ref lastJoinFrame);
                 }
 
                 // Write terminator:
+                message.MOnlineStateBuffer.Terminator = (Int32)(-1);
                 //message.Write((Int32)(-1));
             }
         }
 
-        void WriteOnlineStateRecursiveHelper(int inputIndex, int frame, OnlineState onlineState, ref int lastJoinFrame)
+        void WriteOnlineStateRecursiveHelper(int inputIndex, int frame, OnlineState onlineState, ConnectMessage message, ref int lastJoinFrame)
         {
             if (onlineState.PreviousThisFrame != null)
-                WriteOnlineStateRecursiveHelper(inputIndex, frame, onlineState.PreviousThisFrame, ref lastJoinFrame);
-          //  WriteOnlineStateRecursiveHelper(inputIndex, frame, onlineState.PreviousThisFrame, message, ref lastJoinFrame);
+                WriteOnlineStateRecursiveHelper(inputIndex, frame, onlineState.PreviousThisFrame, message, ref lastJoinFrame);
 
             Debug.Assert(lastJoinFrame != -1 || onlineState.Online); // First written entry is always a join
-
+            message.MOnlineStateBuffer.ConsistentFrame.Add(frame);
             //message.Write(frame);
             if (onlineState.Online)
             {
-              //  message.Write(onlineState.JoiningPlayerName);
-              //  message.WriteByteArray(onlineState.JoiningPlayerData);
+                message.MOnlineStateBuffer.JoinPlayerName.Add(onlineState.JoiningPlayerName);
+                message.MOnlineStateBuffer.JoinPlayerData.Add(Google.Protobuf.ByteString.CopyFrom(onlineState.JoiningPlayerData));
+                //  message.Write(onlineState.JoiningPlayerName);
+                //  message.WriteByteArray(onlineState.JoiningPlayerData);
                 lastJoinFrame = frame;
             }
             else
             {
                 //    WriteInputRLE(inputBuffers[inputIndex], message, lastJoinFrame, frame - lastJoinFrame);
-                WriteInputRLE(inputBuffers[inputIndex], lastJoinFrame, frame - lastJoinFrame);
+                WriteInputRLE(inputBuffers[inputIndex], lastJoinFrame, frame - lastJoinFrame,message.MOnlineStateBuffer.MyMessageInputRLE);
             }
         }
 
@@ -1194,7 +1211,7 @@ namespace RollBack
 
 
 
-        void WriteInputRLE(InputBuffer inputBuffer, int startFrame, int count)
+        void WriteInputRLE(InputBuffer inputBuffer, int startFrame, int count,MessageInputRLE message)
         {
             Debug.Assert(count >= 0);
 
@@ -1221,7 +1238,8 @@ namespace RollBack
                 {
                   //  message.Write((uint)currentRunLength, rleBits);
                  //   message.WriteInputState(currentInputState, inputBitsUsed);
-
+                    message.Count.Add((int)currentRunLength);
+                    message.Inputstate.Add((int)currentInputState);
                     currentRunLength = 0;
                     currentInputState = nextInputState;
                 }
@@ -1230,12 +1248,10 @@ namespace RollBack
             }
 
             Debug.Assert(currentRunLength > 0 && currentRunLength <= rleMaxCount); // check RLE range calculation
-        //    message.Write((uint)currentRunLength, rleBits);
-         //   message.WriteInputState(currentInputState, inputBitsUsed);
-
+            message.Count.Add((int)currentRunLength);
+            message.Inputstate.Add((int)currentInputState);
             writeTerminator:
-                Debug.Log("writeTerminator");
-         //   message.Write((uint)0, rleBits);
+                message.Count.Add(0);
         }
 
 
@@ -1758,7 +1774,10 @@ namespace RollBack
             // This is a suitable proxy for "have we started running" on both client and server:
             if (SimulateHelper.simulateState == SimulateHelper.SimulateState.local && latestJoinLeaveEvent == 0)
             {
+                Debug.Log("LocalStart");
                 this.StartOnServer();
+                Unit u = ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit();
+                this.OnClientJoin(u);
             }
             Debug.Assert(latestJoinLeaveEvent > 0);
 
@@ -1852,6 +1871,65 @@ namespace RollBack
 
 
         #endregion
+
+
+        public void OnClientJoin(Unit u)
+        {
+            Debug.Assert(serverNewestConsistentFrame == newestConsistentFrame); // this should be true for the server
+            Debug.Assert(serverNewestConsistentFrame <= CurrentFrame); // <- need to have the inputs
+            Debug.Assert(serverNewestConsistentFrame <= CurrentSimulationFrame); // <- need to have the snapshot
+
+            double maximumJoinDelaySeconds = 0.25;
+            //这里是客户端自己发自己收，所以双向速度为0;
+            double joinDelaySeconds = Math.Min(Math.Max(0, 0.0) / 2.0, maximumJoinDelaySeconds);
+            int joinFrame = CurrentFrame + (int)Math.Round(joinDelaySeconds * FramesPerSecond);
+            var onlineStateBuffer = onlineStateBuffers[u.mInputAssignment.GetFirstAssignedPlayerIndex()];
+            if (onlineStateBuffer.Count > 0 && joinFrame < onlineStateBuffer.Keys[onlineStateBuffer.Count - 1])
+                joinFrame = onlineStateBuffer.Keys[onlineStateBuffer.Count - 1];
+            // Absolutely cannot join on an already-consistent frame:
+            if (joinFrame <= serverNewestConsistentFrame)
+                joinFrame = serverNewestConsistentFrame + 1;
+
+            JoinLeaveEvent joinEvent = ServerCreateJoinEvent(joinFrame,u);
+            Debug.Assert(joinEvent.consistentFrame == serverNewestConsistentFrame);
+            JoinLeaveEventMessage joinLeaveEventMessage = new JoinLeaveEventMessage();
+            joinEvent.WriteToNetwork(joinLeaveEventMessage);
+            WriteInputPredictionWarmValues(joinLeaveEventMessage);
+            ConnectMessage connectMessage = new ConnectMessage();
+            joinEvent.WriteToNetwork(connectMessage.MConnectJLEMessage);
+            WriteInputPredictionWarmValues(connectMessage.MConnectJLEMessage);
+
+
+            byte[] snapshot = snapshotBuffer[joinEvent.consistentFrame];
+            Debug.Log("Sending snapshot " + joinEvent.consistentFrame + " with size = " + snapshot.Length + " bytes");
+            //Debug.Assert(snapshot.Length < 1300); // <- If this triggers, the snapshot is getting to around the size where it will cause packet fragmentation
+            //Debug.Assert(snapshot.Length < 4000); // <- If this triggers, the snapshot size is getting dangerously large
+            connectMessage.SnapShotLength = snapshot.Length;
+            // connectedMessage.Write(snapshot.Length);
+            // TODO: Add simple compression to snapshots sent over the network
+            connectMessage.SnapShotBytes = Google.Protobuf.ByteString.CopyFrom(snapshot);
+            // connectedMessage.Write(snapshot);
+            WriteOnlineStateBuffer(connectMessage, joinEvent.consistentFrame);
+
+            // Write our local input buffer from the consistency point for the joining client (other clients will do the same with a regular input message):
+            WriteInputRLE(LocalInputBuffer, joinEvent.consistentFrame + 1, CurrentFrame - joinEvent.consistentFrame,connectMessage.MOnlineStateBuffer.MyMessageInputRLE);
+
+            ApplyJoinLeaveEvent(joinEvent);
+            StartTrackingRemoteNCFAndJLE((int)u.mPlayerID, joinEvent.consistentFrame, joinEvent.eventId);
+
+        }
+
+        void WriteInputPredictionWarmValues(JoinLeaveEventMessage message)
+        {
+         //   Debug.Assert(network.IsServer);
+            Debug.Assert(serverNewestConsistentFrame == newestConsistentFrame); // this should be true for the server
+
+            for (int i = 0; i < inputBuffers.Length; i++)
+            {
+                message.Inputstate.Add((int)inputBuffers[i].GetLastBeforeOrAtFrameOrDefault(serverNewestConsistentFrame));
+            }
+                //message.WriteInputState(inputBuffers[i].GetLastBeforeOrAtFrameOrDefault(serverNewestConsistentFrame), inputBitsUsed);
+        }
 
     }
 }
