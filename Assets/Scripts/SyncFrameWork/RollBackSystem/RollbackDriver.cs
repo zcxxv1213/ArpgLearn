@@ -528,24 +528,23 @@ namespace RollBack
 
 
             const int inputIndexBits = 7;
-            //先写死
             /// <summary>Read from network with an already-known event ID</summary>
-            public JoinLeaveEvent(int eventId)
+            public JoinLeaveEvent(int eventId,JoinLeaveEventMessage message)
             {
                 this.eventId = eventId;
-                this.consistentFrame = 1;
-                this.frame = consistentFrame + 1;
+                this.consistentFrame = message.ConsistentFrame;
+                this.frame = consistentFrame + (int)message.FrameSubConsistemtFrame;
                 if (frame <= consistentFrame)
                     Debug.LogError("Join/Leave Event frame number out of range");
                 Debug.Assert(InputAssignmentExtensions.MaxPlayerInputAssignments < (1 << inputIndexBits));
-                this.inputIndex = 1;
+                this.inputIndex = message.InputIndex;
                 if (inputIndex >= InputAssignmentExtensions.MaxPlayerInputAssignments)
                     Debug.LogError("Join/Leave Event input index out of range");
 
-                if (true)
+                if (message.IfJoiningPlayerName == true)
                 {
-                    this.joiningPlayerName = "Name";
-                    this.joiningPlayerData = new byte[0];
+                    this.joiningPlayerName = message.JoiningPlayerName;
+                    this.joiningPlayerData = message.JoiningPlayerData.ToByteArray();
                 }
                 else
                 {
@@ -1056,8 +1055,11 @@ namespace RollBack
                 {
                     lastJoinFrame = consistentFrame;
                     message.MOnlineStateBuffer.LastJoinFrame = lastJoinFrame;
+                    message.MOnlineStateBuffer.ConsistentFrame.Add(lastJoinFrame);
                     message.MOnlineStateBuffer.MJoinPlayerName = onlineState.JoiningPlayerName;
+                    message.MOnlineStateBuffer.JoinPlayerName.Add(onlineState.JoiningPlayerName);
                     message.MOnlineStateBuffer.MJoinPlayerData = Google.Protobuf.ByteString.CopyFrom(onlineState.JoiningPlayerData);
+                    message.MOnlineStateBuffer.JoinPlayerData.Add(Google.Protobuf.ByteString.CopyFrom(onlineState.JoiningPlayerData));
                     // Clamp written entries to the consistentcy point (so that written input fix-ups for leaves work)
                     /* message.Write(lastJoinFrame = consistentFrame);
                      message.Write(onlineState.JoiningPlayerName);
@@ -1100,7 +1102,7 @@ namespace RollBack
         }
 
 
-        void ReceiveOnlineStateBuffer( int consistentFrame)
+        void ReceiveOnlineStateBuffer( OnlineStateBuffer message,int consistentFrame)
         {
             for (int b = 0; b < onlineStateBuffers.Length; b++)
             {
@@ -1112,22 +1114,17 @@ namespace RollBack
                     int frame = 0;
                     string name = null;
                     byte[] data = null;
-                    try
-                    {
-                        //  frame = message.ReadInt32();
-                        frame = 1;
-                        if (frame == -1)
-                            break; // Terminator
+                    //  frame = message.ReadInt32();
+                    frame = message.ConsistentFrame[b];
+                    Debug.Log(frame);
+                    if (frame == -1)
+                        break; // Terminator
 
-                        if (join)
-                        {
-                            /*  name = message.ReadString().FilterName();
-                              data = message.ReadByteArray();*/
-                            name = "name"; 
-                            data = new byte[0]; 
-                        }
+                    if (join)
+                    {
+                        name = message.JoinPlayerName[b];
+                        data = message.JoinPlayerData[b].ToByteArray();
                     }
-                    catch (Exception e) { Debug.LogError("Bad online state buffer"); }
 
                     // First entry can be at the consistency point, remaining entries must be after the consistency point
                     if (lastJoinFrame == -1)
@@ -1149,7 +1146,7 @@ namespace RollBack
                     }
                     else // leave
                     {
-                        ReceiveInputRLEKnownLength(inputBuffers[b], lastJoinFrame, frame);
+                        ReceiveInputRLEKnownLength(inputBuffers[b],message.MyMessageInputRLE, lastJoinFrame, frame);
                     }
 
                     join = !join;
@@ -1199,14 +1196,14 @@ namespace RollBack
         }
 
 
-        void ReceiveInputRLEKnownLength(InputBuffer inputBuffer, int startFrame, int endFrame)
+        void ReceiveInputRLEKnownLength(InputBuffer inputBuffer,MessageInputRLE inputRLE, int startFrame, int endFrame)
         {
             int actualEndFrame;
            //TODO 
-            // ReceiveInputRLE(inputBuffer, startFrame, out actualEndFrame);
+            ReceiveInputRLE(inputBuffer,inputRLE, startFrame, out actualEndFrame);
 
-           // if (actualEndFrame != endFrame)
-             //   Debug.LogError("RLE input length mismatch");
+            if (actualEndFrame != endFrame)
+                Debug.LogError("RLE input length mismatch");
         }
 
 
@@ -1777,7 +1774,12 @@ namespace RollBack
                 Debug.Log("LocalStart");
                 this.StartOnServer();
                 Unit u = ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit();
-                this.OnClientJoin(u);
+                JoinLeaveEventMessage joinLeaveEventMessage = new JoinLeaveEventMessage();
+                ConnectMessage connectMessage = new ConnectMessage();
+                //正常服务器流程加入了之后需要将这两个Message发送到各个客户端
+                this.JoinOnServer(u, ref joinLeaveEventMessage, ref connectMessage);
+                this.JoinOnClient(u,joinLeaveEventMessage);
+                this.ClientConnect(connectMessage);
             }
             Debug.Assert(latestJoinLeaveEvent > 0);
 
@@ -1873,7 +1875,7 @@ namespace RollBack
         #endregion
 
 
-        public void OnClientJoin(Unit u)
+        public void JoinOnServer(Unit u, ref JoinLeaveEventMessage joinMessage, ref ConnectMessage conMessage)
         {
             Debug.Assert(serverNewestConsistentFrame == newestConsistentFrame); // this should be true for the server
             Debug.Assert(serverNewestConsistentFrame <= CurrentFrame); // <- need to have the inputs
@@ -1892,10 +1894,12 @@ namespace RollBack
 
             JoinLeaveEvent joinEvent = ServerCreateJoinEvent(joinFrame,u);
             Debug.Assert(joinEvent.consistentFrame == serverNewestConsistentFrame);
-            JoinLeaveEventMessage joinLeaveEventMessage = new JoinLeaveEventMessage();
+            JoinLeaveEventMessage joinLeaveEventMessage;
+            joinLeaveEventMessage = joinMessage;
             joinEvent.WriteToNetwork(joinLeaveEventMessage);
             WriteInputPredictionWarmValues(joinLeaveEventMessage);
-            ConnectMessage connectMessage = new ConnectMessage();
+            ConnectMessage connectMessage;
+            connectMessage = conMessage;
             joinEvent.WriteToNetwork(connectMessage.MConnectJLEMessage);
             WriteInputPredictionWarmValues(connectMessage.MConnectJLEMessage);
 
@@ -1930,6 +1934,160 @@ namespace RollBack
             }
                 //message.WriteInputState(inputBuffers[i].GetLastBeforeOrAtFrameOrDefault(serverNewestConsistentFrame), inputBitsUsed);
         }
+        void JoinOnClient(Unit u,JoinLeaveEventMessage joinLeaveEventMessage)
+        {
+            JoinLeaveEvent joinEvent = new JoinLeaveEvent(joinLeaveEventMessage.EventId, joinLeaveEventMessage);
+            ValidateNextJoinLeaveEvent(joinEvent, true, serverNewestConsistentFrame, u.mInputAssignment);
 
+            ReceiveInputPredictionWarmValues(joinEvent.consistentFrame, joinLeaveEventMessage);
+
+            // Add the joining client:
+            ApplyJoinLeaveEvent(joinEvent);
+            StartTrackingRemoteNCFAndJLE((int)u.mPlayerID, joinEvent.consistentFrame, joinEvent.eventId);
+
+            // Send them our local input buffer to get them caught up:
+            // (Note: it's possible that we joined on a frame after the consistency point)
+            //如果是自己加入则不用发，如果是别人加入则需要发送
+            //TODO
+           // SendLocalInputBufferForJoin(remotePeer, Math.Max(FindLocalJoinFrame(), joinEvent.consistentFrame + 1));
+        }
+
+        void ValidateNextJoinLeaveEvent(JoinLeaveEvent jle, bool expectedJoin, int minimumConsistentFrame, InputAssignment expectedInputAssignment = 0)
+        {
+            Debug.Assert(joinLeaveEvents.Count == 0 || joinLeaveEvents[joinLeaveEvents.Count - 1].eventId == latestJoinLeaveEvent);
+
+            if (jle.eventId <= 0)
+                Debug.LogError("Join/Leave Event out of range");
+            if (latestJoinLeaveEvent != 0) // (doesn't need to be sequential when first connecting)
+                if (jle.eventId != latestJoinLeaveEvent + 1)
+                    Debug.LogError("Join/Leave Event not sequential");
+
+            if (jle.consistentFrame < minimumConsistentFrame)
+                Debug.LogError("Join/Leave Event's consistent frame out of range");
+
+            if (jle.Join != expectedJoin)
+                Debug.LogError("Join/Leave Event join/leave mismatch");
+
+            if (expectedInputAssignment != 0)
+                if (jle.inputIndex != expectedInputAssignment.GetFirstAssignedPlayerIndex())
+                    Debug.LogError("Join/Leave Event input assignment mismatch");
+        }
+
+        void ReceiveInputPredictionWarmValues(int consistentFrame, JoinLeaveEventMessage message)
+        {
+            try
+            {
+                for (int i = 0; i < inputBuffers.Length; i++)
+                {
+                    
+                    InputState inputState = (InputState)message.Inputstate[i];
+                    Debug.Assert(!inputBuffers[i].ContainsKey(consistentFrame) || inputBuffers[i][consistentFrame] == inputState);
+                    inputBuffers[i][consistentFrame] = inputState;
+                }
+            }
+            catch (Exception e) { Debug.LogError("Bad input prediction warm values"); }
+        }
+        void ClientConnect(ConnectMessage message)
+        {
+            Debug.Assert(latestJoinLeaveEvent == 0); // This is assumed in ReceiveJoinSyncMessage
+            Debug.Assert(serverNewestConsistentFrame == 0); // Our call to ValidateNextJoinEvent passes this as the minimumConsistentFrame parameter
+
+            //
+            // First, load the join event from the network, so we know what frame we're joining on
+            //
+
+            JoinLeaveEvent joinEvent = new JoinLeaveEvent(message.MConnectJLEMessage.EventId,message.MConnectJLEMessage);
+            Unit u = ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit();
+            ValidateNextJoinLeaveEvent(joinEvent, true, 0, u.mInputAssignment);
+            //
+            // Load in the game state at the consistency point, and known changes from the server beyond that point:
+            //
+
+            // There's no point in tracking remote NCFs or JLEs further back than we ourselves have access to (so just assume the server's)
+            // If we happen to host migrate and become server, and a client happens to need older data than we have access to,
+            // then that client is responsible for detecting that situation and disconnecting themselves (gap desync).
+            ReconstructRemoteStatuses(joinEvent.consistentFrame, joinEvent.eventId);
+
+            // Identify the server:
+            /*RemotePeer serverRemotePeer = null;
+            foreach (var remotePeer in network.RemotePeers)
+            {
+                if (remotePeer.PeerInfo.IsServer)
+                {
+                    Debug.Assert(serverRemotePeer == null);
+                    serverRemotePeer = remotePeer;
+                }
+            }
+            Debug.Assert(serverRemotePeer != null);*/
+
+
+            ReceiveInputPredictionWarmValues(joinEvent.consistentFrame, message.MConnectJLEMessage);
+
+
+            // Load in the snapshot at the consistency point:
+            int snapshotLength = message.SnapShotLength;
+
+            byte[] snapshot = message.SnapShotBytes.ToByteArray();
+            /*try
+            {
+                message.ReadPadBits();
+                snapshotLength = message.ReadInt32();
+                snapshot = message.ReadBytes(snapshotLength);
+            }
+            catch (Exception e) { throw new ProtocolException("Bad snapshot read", e); }*/
+
+            // Load the game state, just to validate that it deserializes cleanly (don't trust the network)
+            game.Deserialize(snapshot);
+
+            // We deliberately do not run prediction at this point (wait until Update),
+            // because it's very possible that we already have remote inputs in the
+            // network buffers, ready to processs. But avoid a double-deserialize when we finally do predict:
+            clientStartupSnapshotLoaded = joinEvent.consistentFrame;
+
+            snapshotBuffer[joinEvent.consistentFrame] = snapshot;
+            Debug.Assert(hashBuffer.Count == 0);
+            MarkPredictionDirty(joinEvent.consistentFrame + 1);
+
+
+            // Set online states (including future states)
+            ReceiveOnlineStateBuffer(message.MOnlineStateBuffer, joinEvent.consistentFrame);
+
+
+            // Receive the server's inputs that come after the consistency point
+            // (other clients will send their's when they are told we have come online)
+            int frameAfterServerCurrentFrame;
+            ReceiveInputRLE(inputBuffers[u.mInputAssignment.GetFirstAssignedPlayerIndex()],
+                    message.MOnlineStateBuffer.MyMessageInputRLE, joinEvent.consistentFrame + 1, out frameAfterServerCurrentFrame);
+            int serverCurrentFrame = frameAfterServerCurrentFrame - 1;
+
+
+            // At this point, we have replicated the server's consistency state
+            newestConsistentFrame = joinEvent.consistentFrame;
+
+
+
+            //
+            // Finally, add ourselves to the game and start running
+            //
+
+            // Add ourselves to the game:
+            hostForJLE.Add(0, (int)u.mPlayerID);
+            ApplyJoinLeaveEvent(joinEvent);
+
+            // Setup timing, which sets the current frame:
+            // TODO: Client should wait to start and sync with a regular input packet, rather than using the connect packet
+            //       (Because the connect packet could be huge/fragmented, and is sent ReliableOrdered - so could be slow)
+            ClientSetupTiming(serverCurrentFrame);
+
+            // Fill in our inputs up until that frame with whatever the server tells us to
+            InputState fillInputState = LocalInputBuffer[joinEvent.consistentFrame]; // Get the value set by the "prediction-warming" event
+            for (int frame = joinEvent.frame; frame <= CurrentFrame; frame++)
+                LocalInputBuffer.Add(frame, fillInputState);
+
+            // Broadcast those inputs to the network:
+            //如果是自己加入则不用发，如果是别人加入则需要发送
+            //TODO
+          //  SendLocalInputBufferForJoin(null, joinEvent.frame);
+        }
     }
 }
