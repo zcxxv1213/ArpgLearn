@@ -12,6 +12,7 @@ namespace ETModel
             RoleModel roleModel = RoleModel.Instance;
             foreach (var v in units)
             {
+                Debug.Log(v.mPlayerID);
                 GameObject obj = new GameObject();
                 obj.name = v.name;
                 obj.transform.position = v.Position;

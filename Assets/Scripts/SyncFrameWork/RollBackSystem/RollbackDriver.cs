@@ -248,12 +248,13 @@ namespace RollBack
             /// <param name="joiningPlayerName">The name of a joining player, or null for a leaving player</param>
             public OnlineState(int eventId, string joiningPlayerName, byte[] joiningPlayerData, OnlineState previousThisFrame = null)
             {
+                Debug.LogWarning("New");
                 this.EventId = eventId;
                 this.JoiningPlayerName = joiningPlayerName;
                 this.PreviousThisFrame = previousThisFrame;
                 this.JoiningPlayerData = joiningPlayerData;
 
-                Debug.Assert(previousThisFrame == null || previousThisFrame.Online != this.Online); // Ordering (callers are expected to check/enforce this)
+             //   Debug.Assert(previousThisFrame == null || previousThisFrame.Online != this.Online); // Ordering (callers are expected to check/enforce this)
             }
 
             public int EventId { get; private set; }
@@ -272,20 +273,26 @@ namespace RollBack
         void AppendOnlineStateChange(int eventId, int inputIndex, int frame, string joiningPlayerName, byte[] joiningPlayerData)
         {
             FrameDataBuffer<OnlineState> onlineStateBuffer = onlineStateBuffers[inputIndex];
-
+            Debug.Log(inputIndex);
             // Each input index's Join/Leave events must be ordered by frame (ie: cannot insert a join before a leave,
             // which would represent two clients online at the same time, which is not possible)
-            if (onlineStateBuffer.Count > 0)
+            if (SimulateHelper.simulateState != SimulateHelper.SimulateState.local)
             {
-                int lastOnlineStateFrame = onlineStateBuffer.Keys[onlineStateBuffer.Count - 1];
-                OnlineState lastOnlineState = onlineStateBuffer.Values[onlineStateBuffer.Count - 1];
-
-                if (frame < lastOnlineStateFrame || (joiningPlayerName != null) == lastOnlineState.Online)
+                if (onlineStateBuffer.Count > 0)
                 {
-                    //  Debug.Assert(!network.IsServer); // <- If this ever happens on the server it's a local programming error!
-                    Debug.LogError("Bad online state ordering");
+                    Debug.Log(onlineStateBuffer.Count);
+                    int lastOnlineStateFrame = onlineStateBuffer.Keys[onlineStateBuffer.Count - 1];
+                    OnlineState lastOnlineState = onlineStateBuffer.Values[onlineStateBuffer.Count - 1];
+
+                    if (frame < lastOnlineStateFrame || (joiningPlayerName != null) == lastOnlineState.Online)
+                    {
+                        Debug.Log(frame + "," + lastOnlineStateFrame + "," + joiningPlayerName + "," + lastOnlineState.Online);
+                        //  Debug.Assert(!network.IsServer); // <- If this ever happens on the server it's a local programming error!
+                        Debug.LogError("Bad online state ordering");
+                    }
                 }
             }
+            
 
             if (onlineStateBuffer.Count > 0 && onlineStateBuffer.Keys[onlineStateBuffer.Count - 1] == frame)
             {
@@ -1719,6 +1726,7 @@ namespace RollBack
 
             Debug.Log("First snapshot size = " + initialSnapshot.Length + " bytes");
             Unit u = ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit();
+            Debug.Log(u!=null);
             hostForJLE.Add(0, (int)u.mPlayerID);
 
             // Add ourselves to the game:
@@ -1776,10 +1784,14 @@ namespace RollBack
                 Unit u = ETModel.Game.Scene.GetComponent<BattleControlComponent>().GetMainUnit();
                 JoinLeaveEventMessage joinLeaveEventMessage = new JoinLeaveEventMessage();
                 ConnectMessage connectMessage = new ConnectMessage();
+                connectMessage.MConnectJLEMessage = new JoinLeaveEventMessage();
+                connectMessage.MOnlineStateBuffer = new OnlineStateBuffer();
+                connectMessage.MOnlineStateBuffer.MyMessageInputRLE = new MessageInputRLE();
                 //正常服务器流程加入了之后需要将这两个Message发送到各个客户端
                 this.JoinOnServer(u, ref joinLeaveEventMessage, ref connectMessage);
-                this.JoinOnClient(u,joinLeaveEventMessage);
-                this.ClientConnect(connectMessage);
+                //  this.JoinOnClient(u,joinLeaveEventMessage);
+                //  this.ClientConnect(connectMessage);
+                latestJoinLeaveEvent += 1;
             }
             Debug.Assert(latestJoinLeaveEvent > 0);
 
@@ -1894,29 +1906,28 @@ namespace RollBack
 
             JoinLeaveEvent joinEvent = ServerCreateJoinEvent(joinFrame,u);
             Debug.Assert(joinEvent.consistentFrame == serverNewestConsistentFrame);
-            JoinLeaveEventMessage joinLeaveEventMessage;
-            joinLeaveEventMessage = joinMessage;
-            joinEvent.WriteToNetwork(joinLeaveEventMessage);
-            WriteInputPredictionWarmValues(joinLeaveEventMessage);
-            ConnectMessage connectMessage;
-            connectMessage = conMessage;
-            joinEvent.WriteToNetwork(connectMessage.MConnectJLEMessage);
-            WriteInputPredictionWarmValues(connectMessage.MConnectJLEMessage);
+            Debug.Log(joinMessage);
+            joinEvent.WriteToNetwork(joinMessage);
+            WriteInputPredictionWarmValues(joinMessage);
+            Debug.Log(conMessage);
+            Debug.Log(conMessage.MConnectJLEMessage);
+            joinEvent.WriteToNetwork(conMessage.MConnectJLEMessage);
+            WriteInputPredictionWarmValues(conMessage.MConnectJLEMessage);
 
 
             byte[] snapshot = snapshotBuffer[joinEvent.consistentFrame];
             Debug.Log("Sending snapshot " + joinEvent.consistentFrame + " with size = " + snapshot.Length + " bytes");
             //Debug.Assert(snapshot.Length < 1300); // <- If this triggers, the snapshot is getting to around the size where it will cause packet fragmentation
             //Debug.Assert(snapshot.Length < 4000); // <- If this triggers, the snapshot size is getting dangerously large
-            connectMessage.SnapShotLength = snapshot.Length;
+            conMessage.SnapShotLength = snapshot.Length;
             // connectedMessage.Write(snapshot.Length);
             // TODO: Add simple compression to snapshots sent over the network
-            connectMessage.SnapShotBytes = Google.Protobuf.ByteString.CopyFrom(snapshot);
+            conMessage.SnapShotBytes = Google.Protobuf.ByteString.CopyFrom(snapshot);
             // connectedMessage.Write(snapshot);
-            WriteOnlineStateBuffer(connectMessage, joinEvent.consistentFrame);
+            WriteOnlineStateBuffer(conMessage, joinEvent.consistentFrame);
 
             // Write our local input buffer from the consistency point for the joining client (other clients will do the same with a regular input message):
-            WriteInputRLE(LocalInputBuffer, joinEvent.consistentFrame + 1, CurrentFrame - joinEvent.consistentFrame,connectMessage.MOnlineStateBuffer.MyMessageInputRLE);
+            WriteInputRLE(LocalInputBuffer, joinEvent.consistentFrame + 1, CurrentFrame - joinEvent.consistentFrame, conMessage.MOnlineStateBuffer.MyMessageInputRLE);
 
             ApplyJoinLeaveEvent(joinEvent);
             StartTrackingRemoteNCFAndJLE((int)u.mPlayerID, joinEvent.consistentFrame, joinEvent.eventId);
