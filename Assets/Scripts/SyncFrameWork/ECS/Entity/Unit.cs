@@ -99,6 +99,7 @@ namespace ETModel
         {
             KeyCode code = InputHelper.GetKeyCodeByInputState(state);
             allInputList.Add(code);
+            Debug.Log("UpdateInput");
             if (code == KeyCode.UpArrow)
             {
                 this.Position = new Vector3(this.Position.x, this.Position.y, this.Position.z + 1);

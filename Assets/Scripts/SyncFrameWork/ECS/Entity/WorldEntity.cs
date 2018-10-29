@@ -30,6 +30,11 @@ namespace ETModel
             this.SetGameState(new GameState());
         }
 
+        public GameState GetGameState()
+        {
+            return mGameState;
+        }
+
         public void SetMainUnit(Unit u)
         {
             mMainUnit = u;

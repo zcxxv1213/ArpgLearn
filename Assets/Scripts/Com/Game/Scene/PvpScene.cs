@@ -32,6 +32,10 @@ namespace Assets.Scripts.Com.Game.Module.Scene
             ETModel.Scene mScene = ETModel.Game.Scene;
             mScene.AddComponent<BattleControlComponent>().CreatUnitModel(mScene.GetComponent<UnitComponent>().GetAll());
             worldEntity.SetMainUnit(mScene.GetComponent<BattleControlComponent>().GetMainUnit());
+            foreach (var v in mScene.GetComponent<UnitComponent>().GetAll())
+            {
+                worldEntity.GetGameState().AddGameUnit(v);
+            }
             mScene.GetComponent<WorldManagerComponent>().AddWorld(worldEntity);
             foreach (var v in mScene.GetComponent<UnitComponent>().GetAll())
             {

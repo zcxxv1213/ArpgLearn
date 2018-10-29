@@ -11,7 +11,7 @@ namespace ETModel
     {
         public static InputState GetInputStateByOperation()
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            if (Input.GetKey(KeyCode.UpArrow))
             {
                 return InputState.Input0;
             }

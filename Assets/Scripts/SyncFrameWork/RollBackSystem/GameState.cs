@@ -26,7 +26,7 @@ namespace ETModel
 
         public void AfterRollbackAwareFrame()
         {
-
+            Debug.Log("After");
         }
 
         public void BeforePrediction()
@@ -41,7 +41,7 @@ namespace ETModel
 
         public void PlayerJoin(int playerIndex, string playerName, byte[] playerData, bool firstTimeSimulated)
         {
-
+            Debug.Log("PlayerJoin" + "," + playerIndex + "," + playerName + "," + firstTimeSimulated);
         }
 
         public void PlayerLeave(int playerIndex, bool firstTimeSimulated)
@@ -57,12 +57,18 @@ namespace ETModel
         public void Update(MultiInputState input, bool firstTimeSimulated)
         {
             frame++;
+            Debug.Log(frame);
+            Debug.Log(players.Length);
             foreach (var v in players)
             {
-                InputState state = input[v.mInputAssignment.GetFirstAssignedPlayerIndex()];
-                Debug.Log("InpuState: " + state + "   " + "PlayerID" + v.mPlayerID + "CurrentFrame" + frame);
-                v.UpdateInput(state);
+                if (v != null)
+                {
+                    InputState state = input[v.mInputAssignment.GetFirstAssignedPlayerIndex()];
+                    Debug.Log("InpuState: " + state + "   " + "PlayerID" + v.mPlayerID + "CurrentFrame" + frame);
+                    v.UpdateInput(state);
+                }
             }
+            Debug.Log("AfterUpdate");
         }
 
         #region Serialization
@@ -72,7 +78,7 @@ namespace ETModel
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
             bw.Write(frame);
-            Debug.Log("反序列化 Frame " + frame);
+            Debug.Log("序列化 Frame " + frame);
             for (int i = 0; i < players.Length; i++)
             {
                 if (bw.WriteBoolean(players[i] != null))
@@ -85,15 +91,17 @@ namespace ETModel
 
         public void Deserialize(byte[] data)
         {
+            Debug.Log(data.Length);
             MemoryStream ms = new MemoryStream(data);
             BinaryReader br = new BinaryReader(ms);
 
             frame = br.ReadInt32();
-
+            Debug.Log("反序列化 Frame " + frame + ","+ players.Length);
             for (int i = 0; i < players.Length; i++)
             {
                 if (br.ReadBoolean())
                 {
+                    Debug.Log("True");
                     //队伍信息先写死
                     Unit u = ComponentFactory.Create<Unit, UnitType, Team>(UnitType.Hero, Team.Blue);
                     u.DeSerialize(br);
@@ -101,6 +109,7 @@ namespace ETModel
                 }
                 else
                 {
+                    Debug.Log("False");
                     players[i] = null;
                 }
             }

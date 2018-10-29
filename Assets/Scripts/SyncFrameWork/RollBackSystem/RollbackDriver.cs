@@ -310,9 +310,11 @@ namespace RollBack
         void RunGameJoinLeaveEventsRecursiveHelper(int frame, int inputIndex, OnlineState onlineState, bool firstTimeSimulated)
         {
             // Recurse to start of linked list before running events in order
+            Debug.Log("RunGameJoinLeaveEventsRecursiveHelper" + "," + onlineState.PreviousThisFrame);
             if (onlineState.PreviousThisFrame != null)
                 RunGameJoinLeaveEventsRecursiveHelper(frame, inputIndex, onlineState.PreviousThisFrame, firstTimeSimulated);
 
+            Debug.Log(onlineState.Online);
             if (onlineState.Online)
                 game.PlayerJoin(inputIndex, onlineState.JoiningPlayerName, onlineState.JoiningPlayerData, firstTimeSimulated);
             else
@@ -321,11 +323,13 @@ namespace RollBack
 
         void RunGameJoinLeaveEvents(int frame, bool firstTimeSimulated)
         {
+            Debug.Log("RunGameJoinLeaveEvents" + "," + frame);
             for (int i = 0; i < onlineStateBuffers.Length; i++)
             {
                 OnlineState onlineState;
                 if (onlineStateBuffers[i].TryGetValue(frame, out onlineState))
                 {
+                    Debug.Log("OnlineStateBuff" + "," + onlineState + "," + firstTimeSimulated);
                     RunGameJoinLeaveEventsRecursiveHelper(frame, i, onlineState, firstTimeSimulated);
                 }
             }
@@ -947,7 +951,7 @@ namespace RollBack
 
 
             //int connectionId = remotePeer.PeerInfo.ConnectionId;
-            int connectionId = 1;
+            int connectionId = (int)u.mPlayerID;
             Debug.Assert(remoteStatuses.ContainsKey(connectionId)); // Should have been added on join
             Debug.Assert(remoteStatuses.Count <= InputAssignmentExtensions.MaxPlayerInputAssignments); // Check remotes are being removed when they leave
             RemoteStatus remoteStatus = remoteStatuses[connectionId];
@@ -1342,11 +1346,13 @@ namespace RollBack
 
         void DoPrediction()
         {
+            Debug.Log(predictionDirtyFrame + "," + CurrentSimulationFrame);
+
             if (predictionDirtyFrame > CurrentSimulationFrame)
                 return; // Nothing to predict
 
             Debug.Assert(predictionDirtyFrame > newestConsistentFrame);
-
+            Debug.Log(clientStartupSnapshotLoaded.HasValue);
             if (clientStartupSnapshotLoaded.HasValue)
             {
                 Debug.Assert(clientStartupSnapshotLoaded.Value == predictionDirtyFrame - 1);
@@ -1357,7 +1363,7 @@ namespace RollBack
                 //TODO 反序列化
                 game.Deserialize(snapshotBuffer[predictionDirtyFrame - 1]);
             }
-
+            Debug.Log("Predict1");
 
             // Prediction loop:
             for (int frame = predictionDirtyFrame; frame <= CurrentSimulationFrame; frame++)
@@ -1366,14 +1372,14 @@ namespace RollBack
                 RunGameJoinLeaveEvents(frame, false);
                 game.Update(GetInputForFrame(frame), false);
                 game.AfterRollbackAwareFrame();
-
+                Debug.Log("Loop" + "," + frame);
                 // Save the state that we predicted (so we can reload and predict from it later)
                 // TODO: Pool the snapshot objects that we are replacing here!
                 //反序列化
                 snapshotBuffer[frame] = game.Serialize();
                 hashBuffer.Remove(frame);
             }
-
+            Debug.Log("Predict2");
 
             if (clientStartupSnapshotLoaded.HasValue)
             {
@@ -1777,6 +1783,7 @@ namespace RollBack
             /* if (!network.IsApplicationConnected)
                  return; // Nothing to do!*/
             // This is a suitable proxy for "have we started running" on both client and server:
+         //   Debug.Log(latestJoinLeaveEvent);
             if (SimulateHelper.simulateState == SimulateHelper.SimulateState.local && latestJoinLeaveEvent == 0)
             {
                 Debug.Log("LocalStart");
@@ -1791,17 +1798,20 @@ namespace RollBack
                 this.JoinOnServer(u, ref joinLeaveEventMessage, ref connectMessage);
                 //  this.JoinOnClient(u,joinLeaveEventMessage);
                 //  this.ClientConnect(connectMessage);
-                latestJoinLeaveEvent += 1;
+             //   latestJoinLeaveEvent += 1;
             }
             Debug.Assert(latestJoinLeaveEvent > 0);
 
             try
             {
                 ReadAllNetworkMessages();
+                Debug.Log("1");
                 CheckRemoteNCFAndJLEBackstop();
+                Debug.Log("2");
                 DoPrediction();
+                Debug.Log("3");
                 UpdateNewestConsistentFrame();
-
+                Debug.Log("4");
                 /* if (network.IsServer)
                  {
                      Tick(unnetworkedInputs);
@@ -1867,6 +1877,7 @@ namespace RollBack
 
             // Advance game state:
             // (Note that we don't ever move the simulation frame backwards, we just wait to catch up)
+            Debug.Log(CurrentSimulationFrame + "," + CurrentFrame + "," + LocalFrameDelay);
             while (CurrentSimulationFrame < CurrentFrame - LocalFrameDelay)
             {
                 CurrentSimulationFrame++;
@@ -1897,6 +1908,7 @@ namespace RollBack
             //这里是客户端自己发自己收，所以双向速度为0;
             double joinDelaySeconds = Math.Min(Math.Max(0, 0.0) / 2.0, maximumJoinDelaySeconds);
             int joinFrame = CurrentFrame + (int)Math.Round(joinDelaySeconds * FramesPerSecond);
+            Debug.Log("CurrentFrame" + CurrentFrame + "," + joinDelaySeconds * FramesPerSecond);
             var onlineStateBuffer = onlineStateBuffers[u.mInputAssignment.GetFirstAssignedPlayerIndex()];
             if (onlineStateBuffer.Count > 0 && joinFrame < onlineStateBuffer.Keys[onlineStateBuffer.Count - 1])
                 joinFrame = onlineStateBuffer.Keys[onlineStateBuffer.Count - 1];
@@ -1904,6 +1916,7 @@ namespace RollBack
             if (joinFrame <= serverNewestConsistentFrame)
                 joinFrame = serverNewestConsistentFrame + 1;
 
+            Debug.Log(joinFrame);
             JoinLeaveEvent joinEvent = ServerCreateJoinEvent(joinFrame,u);
             Debug.Assert(joinEvent.consistentFrame == serverNewestConsistentFrame);
             Debug.Log(joinMessage);
