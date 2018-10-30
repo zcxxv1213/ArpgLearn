@@ -105,6 +105,15 @@ namespace ETModel
                 this.Position = new Vector3(this.Position.x, this.Position.y, this.Position.z + 1);
             }
         }
+        private Vector3 mCurrentPos;
+        public void UpdatePosition()
+        {
+            if (this.GameObject.transform.position != this.Position)
+            {
+                mCurrentPos = Vector3.MoveTowards(this.GameObject.transform.position, this.Position, Time.deltaTime * 1);
+                this.GameObject.transform.position = mCurrentPos;
+            }
+        }
 
         public void SetRollBackDriver(RollbackDriver d)
         {
