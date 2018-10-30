@@ -103,9 +103,17 @@ namespace ETModel
                 {
                     Debug.Log("True");
                     //队伍信息先写死
-                    Unit u = ComponentFactory.Create<Unit, UnitType, Team>(UnitType.Hero, Team.Blue);
-                    u.DeSerialize(br);
-                    this.AddGameUnit(u);
+                    if (players[i] != null)
+                    {
+                        players[i].DeSerialize(br);
+                    }
+                    else
+                    {
+                        //创建Unit之后还有模型等信息
+                        /*Unit u = ComponentFactory.Create<Unit, UnitType, Team>(UnitType.Hero, Team.Blue);
+                        u.DeSerialize(br);
+                        this.AddGameUnit(u);*/
+                    }
                 }
                 else
                 {

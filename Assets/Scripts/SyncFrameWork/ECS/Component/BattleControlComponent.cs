@@ -17,6 +17,7 @@ namespace ETModel
                 obj.name = v.name;
                 obj.transform.position = v.Position;
                 v.GameObject = obj;
+                v.AddComponent<UpdateMoveComponent>();
                 if (v.mPlayerID == roleModel.GetPlayerID())
                 {
                     Debug.Log("SetMainHero");

@@ -102,6 +102,7 @@ namespace ETModel
             Debug.Log("UpdateInput");
             if (code == KeyCode.UpArrow)
             {
+                Debug.Log("UpdateOnce");
                 this.Position = new Vector3(this.Position.x, this.Position.y, this.Position.z + 1);
             }
         }

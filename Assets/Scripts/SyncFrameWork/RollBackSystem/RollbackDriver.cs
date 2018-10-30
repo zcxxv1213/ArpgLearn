@@ -1319,7 +1319,7 @@ namespace RollBack
             // Note that the following will work, even if the frame is already in the buffer (received a duplicate)
             InputState previousLogicalInputState = inputBuffer.GetLastBeforeOrAtFrameOrDefault(inputFrame);
             inputBuffer[inputFrame] = inputState;
-
+            Debug.Log("PreInputState:  " + previousLogicalInputState + "," + "NowInputState :" + inputState);
             if (inputState != previousLogicalInputState)
                 MarkPredictionDirty(inputFrame);
         }

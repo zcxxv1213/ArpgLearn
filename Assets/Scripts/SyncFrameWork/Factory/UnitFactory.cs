@@ -23,7 +23,7 @@ namespace Assets.Scripts.SyncFrameWork.Factory
           //  GameObject parent = GameObject.Find($"/Global/Unit");
           //  unit.GameObject.transform.SetParent(parent.transform, false);
          //   unit.AddComponent<AnimatorComponent>();
-            unit.AddComponent<UpdateMoveComponent>();
+   
          //   unit.AddComponent<FrameMoveComponent>();
             unitComponent.Add(unit);
             return unit;
